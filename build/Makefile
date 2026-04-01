@@ -225,6 +225,30 @@ scene.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/BusStandSimulator.dir/build.make CMakeFiles/BusStandSimulator.dir/scene.cpp.s
 .PHONY : scene.cpp.s
 
+texture_util.o: texture_util.cpp.o
+.PHONY : texture_util.o
+
+# target to build an object file
+texture_util.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BusStandSimulator.dir/build.make CMakeFiles/BusStandSimulator.dir/texture_util.cpp.o
+.PHONY : texture_util.cpp.o
+
+texture_util.i: texture_util.cpp.i
+.PHONY : texture_util.i
+
+# target to preprocess a source file
+texture_util.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BusStandSimulator.dir/build.make CMakeFiles/BusStandSimulator.dir/texture_util.cpp.i
+.PHONY : texture_util.cpp.i
+
+texture_util.s: texture_util.cpp.s
+.PHONY : texture_util.s
+
+# target to generate assembly for a file
+texture_util.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BusStandSimulator.dir/build.make CMakeFiles/BusStandSimulator.dir/texture_util.cpp.s
+.PHONY : texture_util.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -246,6 +270,9 @@ help:
 	@echo "... scene.o"
 	@echo "... scene.i"
 	@echo "... scene.s"
+	@echo "... texture_util.o"
+	@echo "... texture_util.i"
+	@echo "... texture_util.s"
 .PHONY : help
 
 

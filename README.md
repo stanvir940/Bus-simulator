@@ -24,6 +24,7 @@ Simple 3D bus stand simulator in C++ using **OpenGL fixed pipeline + GLUT**.
   - Human NPC models around platform and counter areas
   - Enhanced road markings, covered platforms, realistic shading/fog, and richer environment
   - Procedural hilly terrain outside station area, plus more roadside trees and lights
+  - City skyline (perimeter mid-rises / towers with simple window strips)
 - Rendering:
   - Real-time continuous update with idle loop
   - Basic ambient + diffuse lighting
@@ -92,3 +93,11 @@ cmake --build .
 
 - This project intentionally focuses on structure, animation, and interaction rather than high-end graphics.
 - Primitive-based modeling is used for all major objects (cuboids, cylinders, spheres, cones).
+
+## Bus paint texture (optional)
+
+Add textures under `textures/` for a more realistic bus:
+
+- `bus_front`, `bus_back`, `bus_window`, and/or `bus_body` (see `textures/README.txt`).
+
+If files are missing, the bus uses dark fallbacks with a green roof strip.

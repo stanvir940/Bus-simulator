@@ -9,6 +9,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/BusStandSimulator.dir/main.cpp.o.d"
   "CMakeFiles/BusStandSimulator.dir/scene.cpp.o"
   "CMakeFiles/BusStandSimulator.dir/scene.cpp.o.d"
+  "CMakeFiles/BusStandSimulator.dir/texture_util.cpp.o"
+  "CMakeFiles/BusStandSimulator.dir/texture_util.cpp.o.d"
 )
 
 # Per-language clean rules from dependency scanning.

@@ -9,6 +9,7 @@ add_executable(BusStandSimulator
     scene.cpp
     bus.cpp
     camera.cpp
+    texture_util.cpp
 )
 
 if(APPLE)

@@ -12,6 +12,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/camera.cpp" "CMakeFiles/BusStandSimulator.dir/camera.cpp.o" "gcc" "CMakeFiles/BusStandSimulator.dir/camera.cpp.o.d"
   "/Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/main.cpp" "CMakeFiles/BusStandSimulator.dir/main.cpp.o" "gcc" "CMakeFiles/BusStandSimulator.dir/main.cpp.o.d"
   "/Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/scene.cpp" "CMakeFiles/BusStandSimulator.dir/scene.cpp.o" "gcc" "CMakeFiles/BusStandSimulator.dir/scene.cpp.o.d"
+  "/Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/texture_util.cpp" "CMakeFiles/BusStandSimulator.dir/texture_util.cpp.o" "gcc" "CMakeFiles/BusStandSimulator.dir/texture_util.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.
