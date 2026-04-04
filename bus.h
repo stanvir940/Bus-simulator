@@ -12,24 +12,29 @@ class Bus {
 public:
     Bus(float speedUnitsPerSec, float initialDistance, float busLength, float busWidth, float busHeight);
 
-    // Call once after an OpenGL context exists (e.g. after glutCreateWindow).
+    // Call once after an OpenGL context exists.
     static void initGraphics();
 
     void update(float dt);
-    void render() const;
     void setAutopilot(bool enabled);
     bool isAutopilot() const;
     void control(bool accelerate, bool brake, bool turnLeft, bool turnRight, float dt);
 
     Vec3 getPosition() const;
     float getHeadingDegrees() const;
+    float getLength() const { return m_length; }
+    float getWidth() const { return m_width; }
+    float getHeight() const { return m_height; }
+
+    static unsigned int bodyTextureId();
+    static unsigned int frontTextureId();
+    static unsigned int backTextureId();
+    static unsigned int windowTextureId();
+    static bool hasAnyBusTexture();
 
 private:
     Vec3 evaluatePath(float distance, Vec3* tangent = nullptr) const;
     float wrapDistance(float value) const;
-    void drawUnitCylinder(float radius, float length, int slices) const;
-    void drawTexturedBodyBox(float sx, float sy, float sz) const;
-    void drawFallbackBodyBox(float sx, float sy, float sz) const;
 
     float m_speed;
     float m_distance;
@@ -57,9 +62,4 @@ private:
     static bool s_frontTextureOk;
     static bool s_backTextureOk;
     static bool s_windowTextureOk;
-
-    static bool hasAnyBusTexture();
-    void drawTexturedQuadFace(unsigned int tex, float r, float g, float b, float nx, float ny, float nz,
-        float u0, float v0, float u1, float v1, const float* verts12) const;
-    void drawWindowBandTextured(float sx, float sy, float sz) const;
 };

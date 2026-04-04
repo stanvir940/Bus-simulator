@@ -142,13 +142,58 @@ CMakeFiles/BusStandSimulator.dir/texture_util.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/BusStandSimulator.dir/texture_util.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/texture_util.cpp -o CMakeFiles/BusStandSimulator.dir/texture_util.cpp.s
 
+CMakeFiles/BusStandSimulator.dir/shader_program.cpp.o: CMakeFiles/BusStandSimulator.dir/flags.make
+CMakeFiles/BusStandSimulator.dir/shader_program.cpp.o: /Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/shader_program.cpp
+CMakeFiles/BusStandSimulator.dir/shader_program.cpp.o: CMakeFiles/BusStandSimulator.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/BusStandSimulator.dir/shader_program.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BusStandSimulator.dir/shader_program.cpp.o -MF CMakeFiles/BusStandSimulator.dir/shader_program.cpp.o.d -o CMakeFiles/BusStandSimulator.dir/shader_program.cpp.o -c /Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/shader_program.cpp
+
+CMakeFiles/BusStandSimulator.dir/shader_program.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/BusStandSimulator.dir/shader_program.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/shader_program.cpp > CMakeFiles/BusStandSimulator.dir/shader_program.cpp.i
+
+CMakeFiles/BusStandSimulator.dir/shader_program.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/BusStandSimulator.dir/shader_program.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/shader_program.cpp -o CMakeFiles/BusStandSimulator.dir/shader_program.cpp.s
+
+CMakeFiles/BusStandSimulator.dir/lighting.cpp.o: CMakeFiles/BusStandSimulator.dir/flags.make
+CMakeFiles/BusStandSimulator.dir/lighting.cpp.o: /Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/lighting.cpp
+CMakeFiles/BusStandSimulator.dir/lighting.cpp.o: CMakeFiles/BusStandSimulator.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/BusStandSimulator.dir/lighting.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BusStandSimulator.dir/lighting.cpp.o -MF CMakeFiles/BusStandSimulator.dir/lighting.cpp.o.d -o CMakeFiles/BusStandSimulator.dir/lighting.cpp.o -c /Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/lighting.cpp
+
+CMakeFiles/BusStandSimulator.dir/lighting.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/BusStandSimulator.dir/lighting.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/lighting.cpp > CMakeFiles/BusStandSimulator.dir/lighting.cpp.i
+
+CMakeFiles/BusStandSimulator.dir/lighting.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/BusStandSimulator.dir/lighting.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/lighting.cpp -o CMakeFiles/BusStandSimulator.dir/lighting.cpp.s
+
+CMakeFiles/BusStandSimulator.dir/renderer.cpp.o: CMakeFiles/BusStandSimulator.dir/flags.make
+CMakeFiles/BusStandSimulator.dir/renderer.cpp.o: /Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/renderer.cpp
+CMakeFiles/BusStandSimulator.dir/renderer.cpp.o: CMakeFiles/BusStandSimulator.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/BusStandSimulator.dir/renderer.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BusStandSimulator.dir/renderer.cpp.o -MF CMakeFiles/BusStandSimulator.dir/renderer.cpp.o.d -o CMakeFiles/BusStandSimulator.dir/renderer.cpp.o -c /Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/renderer.cpp
+
+CMakeFiles/BusStandSimulator.dir/renderer.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/BusStandSimulator.dir/renderer.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/renderer.cpp > CMakeFiles/BusStandSimulator.dir/renderer.cpp.i
+
+CMakeFiles/BusStandSimulator.dir/renderer.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/BusStandSimulator.dir/renderer.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/renderer.cpp -o CMakeFiles/BusStandSimulator.dir/renderer.cpp.s
+
 # Object files for target BusStandSimulator
 BusStandSimulator_OBJECTS = \
 "CMakeFiles/BusStandSimulator.dir/main.cpp.o" \
 "CMakeFiles/BusStandSimulator.dir/scene.cpp.o" \
 "CMakeFiles/BusStandSimulator.dir/bus.cpp.o" \
 "CMakeFiles/BusStandSimulator.dir/camera.cpp.o" \
-"CMakeFiles/BusStandSimulator.dir/texture_util.cpp.o"
+"CMakeFiles/BusStandSimulator.dir/texture_util.cpp.o" \
+"CMakeFiles/BusStandSimulator.dir/shader_program.cpp.o" \
+"CMakeFiles/BusStandSimulator.dir/lighting.cpp.o" \
+"CMakeFiles/BusStandSimulator.dir/renderer.cpp.o"
 
 # External object files for target BusStandSimulator
 BusStandSimulator_EXTERNAL_OBJECTS =
@@ -158,9 +203,15 @@ BusStandSimulator: CMakeFiles/BusStandSimulator.dir/scene.cpp.o
 BusStandSimulator: CMakeFiles/BusStandSimulator.dir/bus.cpp.o
 BusStandSimulator: CMakeFiles/BusStandSimulator.dir/camera.cpp.o
 BusStandSimulator: CMakeFiles/BusStandSimulator.dir/texture_util.cpp.o
+BusStandSimulator: CMakeFiles/BusStandSimulator.dir/shader_program.cpp.o
+BusStandSimulator: CMakeFiles/BusStandSimulator.dir/lighting.cpp.o
+BusStandSimulator: CMakeFiles/BusStandSimulator.dir/renderer.cpp.o
 BusStandSimulator: CMakeFiles/BusStandSimulator.dir/build.make
+BusStandSimulator: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework
+BusStandSimulator: /opt/homebrew/lib/libglfw.3.4.dylib
+BusStandSimulator: /opt/homebrew/lib/libGLEW.2.3.0.dylib
 BusStandSimulator: CMakeFiles/BusStandSimulator.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable BusStandSimulator"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking CXX executable BusStandSimulator"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/BusStandSimulator.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

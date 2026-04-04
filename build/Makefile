@@ -177,6 +177,30 @@ camera.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/BusStandSimulator.dir/build.make CMakeFiles/BusStandSimulator.dir/camera.cpp.s
 .PHONY : camera.cpp.s
 
+lighting.o: lighting.cpp.o
+.PHONY : lighting.o
+
+# target to build an object file
+lighting.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BusStandSimulator.dir/build.make CMakeFiles/BusStandSimulator.dir/lighting.cpp.o
+.PHONY : lighting.cpp.o
+
+lighting.i: lighting.cpp.i
+.PHONY : lighting.i
+
+# target to preprocess a source file
+lighting.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BusStandSimulator.dir/build.make CMakeFiles/BusStandSimulator.dir/lighting.cpp.i
+.PHONY : lighting.cpp.i
+
+lighting.s: lighting.cpp.s
+.PHONY : lighting.s
+
+# target to generate assembly for a file
+lighting.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BusStandSimulator.dir/build.make CMakeFiles/BusStandSimulator.dir/lighting.cpp.s
+.PHONY : lighting.cpp.s
+
 main.o: main.cpp.o
 .PHONY : main.o
 
@@ -201,6 +225,30 @@ main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/BusStandSimulator.dir/build.make CMakeFiles/BusStandSimulator.dir/main.cpp.s
 .PHONY : main.cpp.s
 
+renderer.o: renderer.cpp.o
+.PHONY : renderer.o
+
+# target to build an object file
+renderer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BusStandSimulator.dir/build.make CMakeFiles/BusStandSimulator.dir/renderer.cpp.o
+.PHONY : renderer.cpp.o
+
+renderer.i: renderer.cpp.i
+.PHONY : renderer.i
+
+# target to preprocess a source file
+renderer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BusStandSimulator.dir/build.make CMakeFiles/BusStandSimulator.dir/renderer.cpp.i
+.PHONY : renderer.cpp.i
+
+renderer.s: renderer.cpp.s
+.PHONY : renderer.s
+
+# target to generate assembly for a file
+renderer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BusStandSimulator.dir/build.make CMakeFiles/BusStandSimulator.dir/renderer.cpp.s
+.PHONY : renderer.cpp.s
+
 scene.o: scene.cpp.o
 .PHONY : scene.o
 
@@ -224,6 +272,30 @@ scene.s: scene.cpp.s
 scene.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/BusStandSimulator.dir/build.make CMakeFiles/BusStandSimulator.dir/scene.cpp.s
 .PHONY : scene.cpp.s
+
+shader_program.o: shader_program.cpp.o
+.PHONY : shader_program.o
+
+# target to build an object file
+shader_program.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BusStandSimulator.dir/build.make CMakeFiles/BusStandSimulator.dir/shader_program.cpp.o
+.PHONY : shader_program.cpp.o
+
+shader_program.i: shader_program.cpp.i
+.PHONY : shader_program.i
+
+# target to preprocess a source file
+shader_program.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BusStandSimulator.dir/build.make CMakeFiles/BusStandSimulator.dir/shader_program.cpp.i
+.PHONY : shader_program.cpp.i
+
+shader_program.s: shader_program.cpp.s
+.PHONY : shader_program.s
+
+# target to generate assembly for a file
+shader_program.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BusStandSimulator.dir/build.make CMakeFiles/BusStandSimulator.dir/shader_program.cpp.s
+.PHONY : shader_program.cpp.s
 
 texture_util.o: texture_util.cpp.o
 .PHONY : texture_util.o
@@ -264,12 +336,21 @@ help:
 	@echo "... camera.o"
 	@echo "... camera.i"
 	@echo "... camera.s"
+	@echo "... lighting.o"
+	@echo "... lighting.i"
+	@echo "... lighting.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... renderer.o"
+	@echo "... renderer.i"
+	@echo "... renderer.s"
 	@echo "... scene.o"
 	@echo "... scene.i"
 	@echo "... scene.s"
+	@echo "... shader_program.o"
+	@echo "... shader_program.i"
+	@echo "... shader_program.s"
 	@echo "... texture_util.o"
 	@echo "... texture_util.i"
 	@echo "... texture_util.s"

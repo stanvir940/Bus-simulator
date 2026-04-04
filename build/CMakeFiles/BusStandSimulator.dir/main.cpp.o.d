@@ -847,11 +847,14 @@ CMakeFiles/BusStandSimulator.dir/main.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cstdarg \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__memory/temp_value.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__split_buffer \
-  /Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/scene.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/GLUT.framework/Headers/glut.h \
+  /Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/render_settings.h \
+  /Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/renderer.h \
+  /Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/lighting.h \
+  /opt/homebrew/include/GL/glew.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework/Headers/glu.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework/Headers/OpenGLAvailability.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/os/availability.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework/Headers/gl.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework/Headers/gltypes.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework/Headers/glext.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework/Headers/glu.h
+  /Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/shader_program.h \
+  /Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/scene.h \
+  /opt/homebrew/include/GLFW/glfw3.h

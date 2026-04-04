@@ -1,140 +1,187 @@
 #include "camera.h"
+#include "render_settings.h"
+#include "renderer.h"
 #include "scene.h"
 
-#include <GLUT/glut.h>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
+#include <algorithm>
+#include <cstdio>
 #include <cstdlib>
 
 namespace {
 Scene g_scene;
 CameraController g_camera;
-int g_prevTimeMs = 0;
+Renderer g_renderer;
+double g_prevTime = 0.0;
 int g_winWidth = 1280;
 int g_winHeight = 720;
+WorldMode g_worldMode = WorldMode::Outdoor;
+AppRenderSettings g_renderSettings;
 }
 
-void renderOverlayText(float x, float y, const char* text) {
-    glRasterPos2f(x, y);
-    while (*text) {
-        glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *text);
-        ++text;
-    }
-}
-
-void display() {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    const float aspect = static_cast<float>(g_winWidth) / static_cast<float>(g_winHeight);
-    gluPerspective(60.0f, aspect, 0.1f, 300.0f);
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    g_camera.applyView(g_scene.getDriverBus());
-    g_scene.render();
-
-    glDisable(GL_LIGHTING);
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    gluOrtho2D(0.0, 1.0, 0.0, 1.0);
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-    glColor3f(1.0f, 1.0f, 1.0f);
-    renderOverlayText(0.02f, 0.96f, "Bus Stand Simulator (Fixed Pipeline + GLUT)");
-    renderOverlayText(0.02f, 0.92f, "1: Top View, 2: Driver View, 3: Free Cam");
-    renderOverlayText(0.02f, 0.88f, "Drive Bus: W/S Accelerate-Brake, A/D or Arrows Steer");
-    renderOverlayText(0.02f, 0.84f, "Mouse Drag: Free-Cam Rotate, +/-: Zoom, ESC: Exit");
-    glPopMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-
-    glutSwapBuffers();
-}
-
-void idle() {
-    const int nowMs = glutGet(GLUT_ELAPSED_TIME);
-    float dt = static_cast<float>(nowMs - g_prevTimeMs) / 1000.0f;
-    g_prevTimeMs = nowMs;
-
-    if (dt < 0.0f) {
-        dt = 0.0f;
-    } else if (dt > 0.05f) {
-        dt = 0.05f;
-    }
-
-    g_scene.update(dt);
-    glutPostRedisplay();
-}
-
-void reshape(int width, int height) {
-    g_winWidth = (width > 1) ? width : 1;
-    g_winHeight = (height > 1) ? height : 1;
+static void framebufferSizeCallback(GLFWwindow*, int w, int h) {
+    g_winWidth = (w > 1) ? w : 1;
+    g_winHeight = (h > 1) ? h : 1;
     glViewport(0, 0, g_winWidth, g_winHeight);
 }
 
-void keyboard(unsigned char key, int, int) {
-    if (key == 27) {
-        std::exit(0);
+static void keyCallback(GLFWwindow* window, int key, int /*scancode*/, int action, int /*mods*/) {
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+        return;
     }
-    g_scene.onKeyState(key, true);
-    g_camera.onKeyboard(key);
+    const bool down = (action != GLFW_RELEASE);
+    const bool outdoor = (g_worldMode == WorldMode::Outdoor);
+    if (action == GLFW_PRESS || action == GLFW_RELEASE) {
+        if (outdoor && (key == GLFW_KEY_W || key == GLFW_KEY_S || key == GLFW_KEY_A || key == GLFW_KEY_D)) {
+            g_scene.onKeyState(key, down);
+        }
+        if (outdoor && (key == GLFW_KEY_LEFT || key == GLFW_KEY_RIGHT || key == GLFW_KEY_UP || key == GLFW_KEY_DOWN)) {
+            g_scene.onSpecialState(key, down);
+        }
+    }
+    if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+        if (key == GLFW_KEY_B) {
+            g_worldMode = (g_worldMode == WorldMode::Outdoor) ? WorldMode::TicketOffice : WorldMode::Outdoor;
+            g_camera.setInteriorMode(g_worldMode == WorldMode::TicketOffice);
+        } else if (key == GLFW_KEY_LEFT_BRACKET) {
+            g_renderSettings.fogDensity = std::max(0.002f, g_renderSettings.fogDensity - 0.002f);
+        } else if (key == GLFW_KEY_RIGHT_BRACKET) {
+            g_renderSettings.fogDensity = std::min(0.06f, g_renderSettings.fogDensity + 0.002f);
+        } else if (key == GLFW_KEY_SEMICOLON) {
+            g_renderSettings.globalAmbientScale = std::max(0.15f, g_renderSettings.globalAmbientScale - 0.05f);
+        } else if (key == GLFW_KEY_APOSTROPHE) {
+            g_renderSettings.globalAmbientScale = std::min(1.8f, g_renderSettings.globalAmbientScale + 0.05f);
+        } else if (key == GLFW_KEY_COMMA) {
+            g_renderSettings.sunDiffuseScale = std::max(0.1f, g_renderSettings.sunDiffuseScale - 0.08f);
+        } else if (key == GLFW_KEY_PERIOD) {
+            g_renderSettings.sunDiffuseScale = std::min(1.6f, g_renderSettings.sunDiffuseScale + 0.08f);
+        } else if (key == GLFW_KEY_7) {
+            g_renderSettings.sunAmbientScale = std::max(0.1f, g_renderSettings.sunAmbientScale - 0.08f);
+        } else if (key == GLFW_KEY_8) {
+            g_renderSettings.sunAmbientScale = std::min(1.6f, g_renderSettings.sunAmbientScale + 0.08f);
+        } else if (key == GLFW_KEY_P) {
+            g_renderSettings.pointLightsEnabled = !g_renderSettings.pointLightsEnabled;
+        } else if (key == GLFW_KEY_O) {
+            g_renderSettings.spotLightsEnabled = !g_renderSettings.spotLightsEnabled;
+        } else if (key == GLFW_KEY_N) {
+            g_renderSettings.nightMode = !g_renderSettings.nightMode;
+        } else {
+            g_camera.onKeyboard(key);
+        }
+    }
+    if (action == GLFW_PRESS || action == GLFW_RELEASE) {
+        if (key == GLFW_KEY_LEFT || key == GLFW_KEY_RIGHT || key == GLFW_KEY_UP || key == GLFW_KEY_DOWN) {
+            g_camera.onSpecial(key, down);
+        }
+    }
 }
 
-void keyboardUp(unsigned char key, int, int) {
-    g_scene.onKeyState(key, false);
+static void mouseButtonCallback(GLFWwindow* window, int button, int action, int /*mods*/) {
+    double x = 0, y = 0;
+    glfwGetCursorPos(window, &x, &y);
+    g_camera.onMouseButton(button, action, x, y);
 }
 
-void special(int key, int, int) {
-    g_scene.onSpecialState(key, true);
-}
-
-void specialUp(int key, int, int) {
-    g_scene.onSpecialState(key, false);
-}
-
-void mouseButton(int button, int state, int x, int y) {
-    g_camera.onMouseButton(button, state, x, y);
-}
-
-void mouseMove(int x, int y) {
+static void cursorPosCallback(GLFWwindow*, double x, double y) {
     g_camera.onMouseMove(x, y);
 }
 
-int main(int argc, char** argv) {
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-    glutInitWindowSize(g_winWidth, g_winHeight);
-    glutCreateWindow("Bus Stand Simulator");
+int main() {
+    if (!glfwInit()) {
+        std::fprintf(stderr, "glfwInit failed\n");
+        return 1;
+    }
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+
+    GLFWwindow* window = glfwCreateWindow(g_winWidth, g_winHeight, "Bus Stand Simulator", nullptr, nullptr);
+    if (!window) {
+        std::fprintf(stderr, "glfwCreateWindow failed\n");
+        glfwTerminate();
+        return 1;
+    }
+    glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);
+    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+    glfwSetKeyCallback(window, keyCallback);
+    glfwSetMouseButtonCallback(window, mouseButtonCallback);
+    glfwSetCursorPosCallback(window, cursorPosCallback);
+
+    glewExperimental = GL_TRUE;
+    const GLenum glewErr = glewInit();
+    if (glewErr != GLEW_OK) {
+        std::fprintf(stderr, "glewInit: %s\n", reinterpret_cast<const char*>(glewGetErrorString(glewErr)));
+        glfwDestroyWindow(window);
+        glfwTerminate();
+        return 1;
+    }
+    glGetError();
+
+    glEnable(GL_DEPTH_TEST);
+    glClearColor(0.60f, 0.82f, 0.95f, 1.0f);
 
     g_scene.initGlResources();
 
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_COLOR_MATERIAL);
-    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-    glClearColor(0.60f, 0.82f, 0.95f, 1.0f);
-    glShadeModel(GL_SMOOTH);
+    const char* shaderDirs[] = {
+#ifdef SHADER_DIR
+        SHADER_DIR,
+#endif
+        "shaders",
+        "../shaders",
+        "../../BusStandSimulator/shaders",
+    };
+    bool rendererOk = false;
+    for (const char* d : shaderDirs) {
+        if (d == nullptr || d[0] == '\0') {
+            continue;
+        }
+        if (g_renderer.init(d, g_scene)) {
+            rendererOk = true;
+            break;
+        }
+    }
+    if (!rendererOk) {
+        std::fprintf(stderr, "Renderer init failed. Run from build dir with shaders/ copied next to executable, or set SHADER_DIR.\n");
+        glfwDestroyWindow(window);
+        glfwTerminate();
+        return 1;
+    }
 
-    glEnable(GL_FOG);
-    const GLfloat fogColor[] = {0.62f, 0.78f, 0.92f, 1.0f};
-    glFogfv(GL_FOG_COLOR, fogColor);
-    glFogf(GL_FOG_DENSITY, 0.012f);
-    glFogi(GL_FOG_MODE, GL_EXP2);
+    glfwGetFramebufferSize(window, &g_winWidth, &g_winHeight);
+    glViewport(0, 0, g_winWidth, g_winHeight);
 
-    g_prevTimeMs = glutGet(GLUT_ELAPSED_TIME);
+    g_prevTime = glfwGetTime();
 
-    glutDisplayFunc(display);
-    glutIdleFunc(idle);
-    glutReshapeFunc(reshape);
-    glutKeyboardFunc(keyboard);
-    glutKeyboardUpFunc(keyboardUp);
-    glutSpecialFunc(special);
-    glutSpecialUpFunc(specialUp);
-    glutMouseFunc(mouseButton);
-    glutMotionFunc(mouseMove);
+    while (!glfwWindowShouldClose(window)) {
+        const double now = glfwGetTime();
+        float dt = static_cast<float>(now - g_prevTime);
+        g_prevTime = now;
+        if (dt < 0.0f) {
+            dt = 0.0f;
+        } else if (dt > 0.05f) {
+            dt = 0.05f;
+        }
 
-    glutMainLoop();
+        g_scene.update(dt);
+
+        glClearColor(g_renderSettings.fogColor[0], g_renderSettings.fogColor[1], g_renderSettings.fogColor[2], 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        g_renderer.draw(g_scene, g_camera, g_scene.getDriverBus(), g_winWidth, g_winHeight, g_scene.timeSec(), g_worldMode,
+            g_renderSettings);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwDestroyWindow(window);
+    glfwTerminate();
     return 0;
 }

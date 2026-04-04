@@ -1,0 +1,48 @@
+# ===== Build directories =====
+build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+compile_commands.json
+
+# ===== Executables / binaries =====
+*.out
+*.app
+*.exe
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+
+# ===== macOS =====
+.DS_Store
+
+# ===== Logs =====
+*.log
+
+# ===== IDE / Editor =====
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ===== Temporary files =====
+*.tmp
+*.temp
+
+# ===== Dependencies (if any local libs) =====
+*.a
+
+# ===== Generated shader cache (if used) =====
+*.cache
+
+# ===== Misc =====
+run.txt
+
+public/*
+
+textures/*
+

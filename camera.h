@@ -8,6 +8,15 @@ enum class CameraMode {
     FREE = 2,
 };
 
+// While driving (DRIVER mode), cycle with V.
+enum class DriverCamStyle {
+    COCKPIT = 0,
+    CHASE_BACK,
+    CHASE_FRONT,
+    SIDE_LEFT,
+    SIDE_RIGHT,
+};
+
 class CameraController {
 public:
     CameraController();
@@ -15,20 +24,29 @@ public:
     void setMode(CameraMode mode);
     CameraMode getMode() const;
 
-    void applyView(const Bus& driverBus) const;
-    void onKeyboard(unsigned char key);
-    void onSpecial(int key);
-    void onMouseButton(int button, int state, int x, int y);
-    void onMouseMove(int x, int y);
+    void setInteriorMode(bool interior);
+    bool isInteriorMode() const;
+
+    void cycleDriverCam();
+
+    void getViewMatrix(const Bus& driverBus, float* outColumnMajor16) const;
+    void getCameraWorldPosition(const Bus& driverBus, float* outXYZ) const;
+
+    void onKeyboard(int key);
+    void onSpecial(int key, bool pressed);
+    void onMouseButton(int button, int action, double x, double y);
+    void onMouseMove(double x, double y);
 
 private:
     CameraMode m_mode;
+    DriverCamStyle m_driverCam;
+    bool m_interiorMode;
     float m_yawDeg;
     float m_pitchDeg;
     float m_distance;
     float m_panX;
     float m_panY;
     bool m_leftMouseDown;
-    int m_lastMouseX;
-    int m_lastMouseY;
+    double m_lastMouseX;
+    double m_lastMouseY;
 };

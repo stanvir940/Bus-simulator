@@ -10,8 +10,11 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/bus.cpp" "CMakeFiles/BusStandSimulator.dir/bus.cpp.o" "gcc" "CMakeFiles/BusStandSimulator.dir/bus.cpp.o.d"
   "/Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/camera.cpp" "CMakeFiles/BusStandSimulator.dir/camera.cpp.o" "gcc" "CMakeFiles/BusStandSimulator.dir/camera.cpp.o.d"
+  "/Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/lighting.cpp" "CMakeFiles/BusStandSimulator.dir/lighting.cpp.o" "gcc" "CMakeFiles/BusStandSimulator.dir/lighting.cpp.o.d"
   "/Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/main.cpp" "CMakeFiles/BusStandSimulator.dir/main.cpp.o" "gcc" "CMakeFiles/BusStandSimulator.dir/main.cpp.o.d"
+  "/Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/renderer.cpp" "CMakeFiles/BusStandSimulator.dir/renderer.cpp.o" "gcc" "CMakeFiles/BusStandSimulator.dir/renderer.cpp.o.d"
   "/Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/scene.cpp" "CMakeFiles/BusStandSimulator.dir/scene.cpp.o" "gcc" "CMakeFiles/BusStandSimulator.dir/scene.cpp.o.d"
+  "/Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/shader_program.cpp" "CMakeFiles/BusStandSimulator.dir/shader_program.cpp.o" "gcc" "CMakeFiles/BusStandSimulator.dir/shader_program.cpp.o.d"
   "/Users/tanvirahmed/Web-Development/ogldev-master/BusStandSimulator/texture_util.cpp" "CMakeFiles/BusStandSimulator.dir/texture_util.cpp.o" "gcc" "CMakeFiles/BusStandSimulator.dir/texture_util.cpp.o.d"
   )
 
