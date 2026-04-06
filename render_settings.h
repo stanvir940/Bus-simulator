@@ -12,6 +12,12 @@ struct AppRenderSettings {
     float globalAmbientScale = 1.0f;
     float sunDiffuseScale = 1.0f;
     float sunAmbientScale = 1.0f;
+    /// Horizontal angle (degrees): 0 = +Z, increases toward +X (matches former fixed sun vector).
+    float sunAzimuthDeg = 76.0f;
+    /// Angle above horizon (degrees).
+    float sunElevationDeg = 52.5f;
+    /// Multiplies directional + point/spot specular contribution after lighting is set up.
+    float specularScale = 1.0f;
     bool pointLightsEnabled = true;
     bool spotLightsEnabled = true;
     bool nightMode = false;

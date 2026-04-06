@@ -35,7 +35,7 @@ struct Spotlight {
 constexpr int kMaxSpotlights = 24;
 
 void applyLightingUniforms(GLuint program, const float* cameraWorldPos3, const float* globalAmbient3,
-    const DirectionalLight& sun, int numPoints, const PointLight* points);
+    const DirectionalLight& sun, int numPoints, const PointLight* points, float specularGlobalScale = 1.0f);
 
 void applySpotlights(GLuint program, int numSpots, const Spotlight* spots);
 

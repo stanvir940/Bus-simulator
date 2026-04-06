@@ -27,12 +27,17 @@ uniform vec3 uSpotAtten[24];
 
 uniform float uShininess;
 uniform float uSpecularStrength;
+uniform float uSpecularGlobalScale;
 
 uniform float uFogDensity;
 uniform vec3 uFogColor;
 
 uniform sampler2D uGrassTex;
 uniform float uUseGrassTex;
+uniform sampler2D uPathTex;
+uniform float uUsePathTex;
+uniform sampler2D uGroundDetailTex;
+uniform float uUseGroundDetailTex;
 
 out vec4 FragColor;
 
@@ -46,7 +51,7 @@ vec3 phongPoint(int i, vec3 N, vec3 V, vec3 base) {
     float att = 1.0 / (uPointAtten[i].x + uPointAtten[i].y * dist + uPointAtten[i].z * dist * dist);
     vec3 amb = uPointAmbient[i] * base;
     vec3 dif = uPointDiffuse[i] * diff * base;
-    vec3 spc = uPointSpecular[i] * spec * uSpecularStrength;
+    vec3 spc = uPointSpecular[i] * spec * uSpecularStrength * uSpecularGlobalScale;
     return (amb + dif + spc) * att;
 }
 
@@ -65,7 +70,7 @@ vec3 phongSpot(int i, vec3 N, vec3 V, vec3 base) {
     float spec = pow(max(dot(V, R), 0.0), uShininess);
     float att = 1.0 / (uSpotAtten[i].x + uSpotAtten[i].y * dist + uSpotAtten[i].z * dist * dist);
     vec3 dif = uSpotDiffuse[i] * diff * base * spotInt;
-    vec3 spc = uSpotSpecular[i] * spec * uSpecularStrength * spotInt;
+    vec3 spc = uSpotSpecular[i] * spec * uSpecularStrength * uSpecularGlobalScale * spotInt;
     return (dif + spc) * att;
 }
 
@@ -77,6 +82,22 @@ void main() {
         vec2 uv = vWorldPos.xz * 0.12;
         albedo *= texture(uGrassTex, uv).rgb;
     }
+    if (uUseGroundDetailTex > 0.5) {
+        vec2 uvD = vWorldPos.xz * 0.085;
+        vec3 det = texture(uGroundDetailTex, uvD).rgb;
+        float patch = 0.5 + 0.5 * sin(vWorldPos.x * 0.07 + vWorldPos.z * 0.09);
+        albedo = mix(albedo, albedo * det, 0.18 + 0.12 * patch);
+    }
+    float inFlat = step(abs(vWorldPos.x), 46.0) * step(abs(vWorldPos.z), 46.0);
+    float pathEw = (1.0 - smoothstep(1.15, 2.35, abs(vWorldPos.z))) * inFlat;
+    float pathNs = (1.0 - smoothstep(1.15, 2.35, abs(vWorldPos.x))) * inFlat;
+    float pathRing = (1.0 - smoothstep(5.5, 7.2, abs(length(vWorldPos.xz) - 28.0))) * inFlat;
+    float pathW = clamp(max(pathEw, max(pathNs, pathRing * 0.65)), 0.0, 1.0);
+    if (uUsePathTex > 0.5) {
+        vec2 puv = vWorldPos.xz * 0.32;
+        vec3 pathCol = texture(uPathTex, puv).rgb;
+        albedo = mix(albedo, pathCol, pathW * 0.88);
+    }
 
     vec3 color = uGlobalAmbient * albedo;
 
@@ -86,7 +107,7 @@ void main() {
     float dSpec = pow(max(dot(V, Rd), 0.0), uShininess);
     color += uDirAmbient * albedo;
     color += uDirDiffuse * dDiff * albedo;
-    color += uDirSpecular * dSpec * uSpecularStrength;
+    color += uDirSpecular * dSpec * uSpecularStrength * uSpecularGlobalScale;
 
     for (int i = 0; i < uNumPointLights && i < 8; ++i) {
         color += phongPoint(i, N, V, albedo);

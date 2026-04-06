@@ -16,7 +16,7 @@ void setVec3(GLint loc, float x, float y, float z) {
 }  // namespace
 
 void applyLightingUniforms(GLuint program, const float* cameraWorldPos3, const float* globalAmbient3,
-    const DirectionalLight& sun, int numPoints, const PointLight* points) {
+    const DirectionalLight& sun, int numPoints, const PointLight* points, float specularGlobalScale) {
     glUseProgram(program);
 
     GLint uCam = glGetUniformLocation(program, "uCameraPos");
@@ -59,6 +59,11 @@ void applyLightingUniforms(GLuint program, const float* cameraWorldPos3, const f
         if (loc >= 0) {
             glUniform3f(loc, p.constant, p.linear, p.quadratic);
         }
+    }
+
+    GLint uSpecG = glGetUniformLocation(program, "uSpecularGlobalScale");
+    if (uSpecG >= 0) {
+        glUniform1f(uSpecG, specularGlobalScale);
     }
 }
 

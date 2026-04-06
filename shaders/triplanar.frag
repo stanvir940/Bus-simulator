@@ -29,6 +29,7 @@ uniform float uTexScale;
 uniform vec3 uTint;
 uniform float uShininess;
 uniform float uSpecularStrength;
+uniform float uSpecularGlobalScale;
 
 uniform float uFogDensity;
 uniform vec3 uFogColor;
@@ -54,7 +55,7 @@ vec3 phongPoint(int i, vec3 N, vec3 V, vec3 base) {
     float att = 1.0 / (uPointAtten[i].x + uPointAtten[i].y * dist + uPointAtten[i].z * dist * dist);
     vec3 amb = uPointAmbient[i] * base;
     vec3 dif = uPointDiffuse[i] * diff * base;
-    vec3 spc = uPointSpecular[i] * spec * uSpecularStrength;
+    vec3 spc = uPointSpecular[i] * spec * uSpecularStrength * uSpecularGlobalScale;
     return (amb + dif + spc) * att;
 }
 
@@ -73,7 +74,7 @@ vec3 phongSpot(int i, vec3 N, vec3 V, vec3 base) {
     float spec = pow(max(dot(V, R), 0.0), uShininess);
     float att = 1.0 / (uSpotAtten[i].x + uSpotAtten[i].y * dist + uSpotAtten[i].z * dist * dist);
     vec3 dif = uSpotDiffuse[i] * diff * base * spotInt;
-    vec3 spc = uSpotSpecular[i] * spec * uSpecularStrength * spotInt;
+    vec3 spc = uSpotSpecular[i] * spec * uSpecularStrength * uSpecularGlobalScale * spotInt;
     return (dif + spc) * att;
 }
 
@@ -90,7 +91,7 @@ void main() {
     float dSpec = pow(max(dot(V, Rd), 0.0), uShininess);
     color += uDirAmbient * albedo;
     color += uDirDiffuse * dDiff * albedo;
-    color += uDirSpecular * dSpec * uSpecularStrength;
+    color += uDirSpecular * dSpec * uSpecularStrength * uSpecularGlobalScale;
 
     for (int i = 0; i < uNumPointLights && i < 8; ++i) {
         color += phongPoint(i, N, V, albedo);

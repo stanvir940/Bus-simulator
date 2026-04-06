@@ -43,6 +43,9 @@ private:
         float nz, const float* verts12, float u0, float v0, float u1, float v1, GLuint tex, float fallbackR,
         float fallbackG, float fallbackB, std::vector<float>& scratch);
 
+    void drawWindBanner(const Scene& scene, const float* view, const float* proj, const float* camPos, float timeSec,
+        const AppRenderSettings& settings);
+
     int fillSpotlights(const Scene& scene, Spotlight* out);
 
     ShaderProgram m_standard;
@@ -63,9 +66,15 @@ private:
     GLuint m_roadVbo = 0;
     GLsizei m_roadVertexCount = 0;
 
-    GLuint m_triplanarVao = 0;
-    GLuint m_triplanarVbo = 0;
-    GLsizei m_triplanarVertexCount = 0;
+    GLuint m_tpStationVao = 0;
+    GLuint m_tpStationVbo = 0;
+    GLsizei m_tpStationVertexCount = 0;
+    GLuint m_tpCityVao = 0;
+    GLuint m_tpCityVbo = 0;
+    GLsizei m_tpCityVertexCount = 0;
+    GLuint m_tpTowerVao = 0;
+    GLuint m_tpTowerVbo = 0;
+    GLsizei m_tpTowerVertexCount = 0;
 
     GLuint m_waterVao = 0;
     GLuint m_waterVbo = 0;
@@ -78,6 +87,11 @@ private:
     GLuint m_grassTex = 0;
     GLuint m_roadTex = 0;
     GLuint m_buildingTex = 0;
+    GLuint m_buildingCityTex = 0;
+    GLuint m_buildingTowerTex = 0;
+    GLuint m_pathTex = 0;
+    GLuint m_groundDetailTex = 0;
+    GLuint m_flagTex = 0;
     GLuint m_lampTex = 0;
     GLuint m_chairTex = 0;
     GLuint m_npcTex = 0;
@@ -87,6 +101,11 @@ private:
     bool m_hasGrassTex = false;
     bool m_hasRoadTex = false;
     bool m_hasBuildingTex = false;
+    bool m_hasBuildingCityTex = false;
+    bool m_hasBuildingTowerTex = false;
+    bool m_hasPathTex = false;
+    bool m_hasGroundDetailTex = false;
+    bool m_hasFlagTex = false;
     bool m_hasLampTex = false;
     bool m_hasChairTex = false;
     bool m_hasNpcTex = false;

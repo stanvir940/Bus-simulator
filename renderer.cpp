@@ -561,7 +561,7 @@ Renderer::~Renderer() {
 
 static void bindPhongFogSpots(GLuint prog, const float* camPos, const float* ga, const DirectionalLight& sun, int nPt,
     const PointLight* pts, int nSpot, const Spotlight* spots, const AppRenderSettings& settings) {
-    applyLightingUniforms(prog, camPos, ga, sun, nPt, pts);
+    applyLightingUniforms(prog, camPos, ga, sun, nPt, pts, settings.specularScale);
     applyFogUniforms(prog, settings.fogDensity, settings.fogColor);
     applySpotlights(prog, settings.spotLightsEnabled ? nSpot : 0, spots);
 }
@@ -569,9 +569,12 @@ static void bindPhongFogSpots(GLuint prog, const float* camPos, const float* ga,
 static DirectionalLight makeSun(const AppRenderSettings& s) {
     const float night = s.nightMode ? 0.18f : 1.0f;
     DirectionalLight sun{};
-    sun.dir[0] = 40.0f;
-    sun.dir[1] = 55.0f;
-    sun.dir[2] = 10.0f;
+    const float az = s.sunAzimuthDeg * (kMathPi / 180.0f);
+    const float el = s.sunElevationDeg * (kMathPi / 180.0f);
+    const float ce = std::cos(el);
+    sun.dir[0] = ce * std::sin(az);
+    sun.dir[1] = std::sin(el);
+    sun.dir[2] = ce * std::cos(az);
     sun.ambient[0] = 0.22f * s.sunAmbientScale * night;
     sun.ambient[1] = 0.22f * s.sunAmbientScale * night;
     sun.ambient[2] = (s.nightMode ? 0.32f : 0.25f) * s.sunAmbientScale * night;
@@ -597,19 +600,24 @@ void Renderer::destroyGpu() {
     delV(m_terrainVao, m_terrainVbo);
     delV(m_staticVao, m_staticVbo);
     delV(m_roadVao, m_roadVbo);
-    delV(m_triplanarVao, m_triplanarVbo);
+    delV(m_tpStationVao, m_tpStationVbo);
+    delV(m_tpCityVao, m_tpCityVbo);
+    delV(m_tpTowerVao, m_tpTowerVbo);
     delV(m_waterVao, m_waterVbo);
     delV(m_interiorVao, m_interiorVbo);
-    m_terrainVertexCount = m_staticVertexCount = m_roadVertexCount = m_triplanarVertexCount = m_waterVertexCount =
-        m_interiorVertexCount = 0;
-    const GLuint texs[] = {m_grassTex, m_roadTex, m_buildingTex, m_lampTex, m_chairTex, m_npcTex, m_waterTex, m_whiteTex};
+    m_terrainVertexCount = m_staticVertexCount = m_roadVertexCount = m_tpStationVertexCount = m_tpCityVertexCount =
+        m_tpTowerVertexCount = m_waterVertexCount = m_interiorVertexCount = 0;
+    const GLuint texs[] = {m_grassTex, m_roadTex, m_buildingTex, m_buildingCityTex, m_buildingTowerTex, m_pathTex,
+        m_groundDetailTex, m_flagTex, m_lampTex, m_chairTex, m_npcTex, m_waterTex, m_whiteTex};
     for (GLuint t : texs) {
         if (t) {
             glDeleteTextures(1, &t);
         }
     }
-    m_grassTex = m_roadTex = m_buildingTex = m_lampTex = m_chairTex = m_npcTex = m_waterTex = m_whiteTex = 0;
-    m_hasGrassTex = m_hasRoadTex = m_hasBuildingTex = m_hasLampTex = m_hasChairTex = m_hasNpcTex = m_hasWaterTex = false;
+    m_grassTex = m_roadTex = m_buildingTex = m_buildingCityTex = m_buildingTowerTex = m_pathTex = m_groundDetailTex =
+        m_flagTex = m_lampTex = m_chairTex = m_npcTex = m_waterTex = m_whiteTex = 0;
+    m_hasGrassTex = m_hasRoadTex = m_hasBuildingTex = m_hasBuildingCityTex = m_hasBuildingTowerTex = m_hasPathTex =
+        m_hasGroundDetailTex = m_hasFlagTex = m_hasLampTex = m_hasChairTex = m_hasNpcTex = m_hasWaterTex = false;
 }
 
 void Renderer::loadTextures() {
@@ -618,10 +626,16 @@ void Renderer::loadTextures() {
     if (m_grassTex == 0) {
         m_grassTex = loadTextureStem("grass");
     }
+    if (m_grassTex == 0) {
+        m_grassTex = loadTextureStem("normal-ground");
+    }
     m_hasGrassTex = (m_grassTex != 0);
     m_roadTex = loadTextureStem("road_asphalt");
     if (m_roadTex == 0) {
         m_roadTex = loadTextureStem("road");
+    }
+    if (m_roadTex == 0) {
+        m_roadTex = loadTextureStem("concrete");
     }
     m_hasRoadTex = (m_roadTex != 0);
     m_buildingTex = loadTextureStem("building");
@@ -629,6 +643,28 @@ void Renderer::loadTextures() {
         m_buildingTex = loadTextureStem("wall_brick");
     }
     m_hasBuildingTex = (m_buildingTex != 0);
+    m_buildingCityTex = loadTextureStem("old-building");
+    if (m_buildingCityTex == 0) {
+        m_buildingCityTex = m_buildingTex;
+    }
+    m_hasBuildingCityTex = (m_buildingCityTex != 0);
+    m_buildingTowerTex = loadTextureStem("HighRiseResidential0139_1_350");
+    if (m_buildingTowerTex == 0) {
+        m_buildingTowerTex = loadTextureStem("highrise");
+    }
+    if (m_buildingTowerTex == 0) {
+        m_buildingTowerTex = m_buildingCityTex;
+    }
+    m_hasBuildingTowerTex = (m_buildingTowerTex != 0);
+    m_pathTex = loadTextureStem("concrete");
+    m_hasPathTex = (m_pathTex != 0);
+    m_groundDetailTex = loadTextureStem("flowers");
+    if (m_groundDetailTex == 0) {
+        m_groundDetailTex = loadTextureStem("normal-ground");
+    }
+    m_hasGroundDetailTex = (m_groundDetailTex != 0);
+    m_flagTex = loadTextureStem("flowers");
+    m_hasFlagTex = (m_flagTex != 0);
     m_lampTex = loadTextureStem("lamp");
     m_hasLampTex = (m_lampTex != 0);
     m_chairTex = loadTextureStem("chair");
@@ -761,53 +797,55 @@ void Renderer::buildRoadMesh(const Scene& scene) {
 }
 
 void Renderer::buildTriplanarMesh(const Scene& scene) {
-    std::vector<float> mesh;
+    std::vector<float> meshStation;
+    std::vector<float> meshCity;
+    std::vector<float> meshTower;
     for (int i = 0; i < 4; ++i) {
         const float px = -22.0f + i * 14.0f;
-        addCuboidTp(mesh, px, 0.35f, 30.0f, 10.0f, 0.7f, 8.0f);
-        addCuboidTp(mesh, px, 3.3f, 30.0f, 11.0f, 0.35f, 8.6f);
+        addCuboidTp(meshStation, px, 0.35f, 30.0f, 10.0f, 0.7f, 8.0f);
+        addCuboidTp(meshStation, px, 3.3f, 30.0f, 11.0f, 0.35f, 8.6f);
         for (int s = -1; s <= 1; s += 2) {
-            addCuboidTp(mesh, px + s * 3.2f, 0.55f, 32.5f, 0.55f, 0.65f, 0.55f);
+            addCuboidTp(meshStation, px + s * 3.2f, 0.55f, 32.5f, 0.55f, 0.65f, 0.55f);
         }
     }
-    addCuboidTp(mesh, 0.0f, 4.0f, -40.0f, 36.0f, 8.0f, 16.0f);
-    addCuboidTp(mesh, 0.0f, 8.7f, -40.0f, 38.0f, 1.0f, 17.0f);
+    addCuboidTp(meshStation, 0.0f, 4.0f, -40.0f, 44.0f, 8.0f, 20.0f);
+    addCuboidTp(meshStation, 0.0f, 8.7f, -40.0f, 46.0f, 1.0f, 21.0f);
     for (int i = 0; i < 5; ++i) {
-        addCuboidTp(mesh, -13.0f + i * 6.5f, 4.0f, -31.8f, 3.0f, 4.0f, 0.2f);
+        addCuboidTp(meshStation, -13.0f + i * 6.5f, 4.0f, -31.8f, 3.4f, 4.0f, 0.35f);
     }
 
-    addCuboidTp(mesh, 0.0f, 2.5f, -10.0f, 26.0f, 5.0f, 12.0f);
-    addCuboidTp(mesh, 0.0f, 5.3f, -10.0f, 27.0f, 0.8f, 13.0f);
+    addCuboidTp(meshStation, 0.0f, 2.5f, -10.0f, 28.0f, 5.0f, 14.0f);
+    addCuboidTp(meshStation, 0.0f, 5.3f, -10.0f, 29.0f, 0.8f, 15.0f);
     for (int i = 0; i < 3; ++i) {
-        addCuboidTp(mesh, -7.5f + i * 7.5f, 1.2f, -6.4f, 5.5f, 2.4f, 0.5f);
-        addCuboidTp(mesh, -7.5f + i * 7.5f, 2.5f, -5.8f, 2.4f, 1.2f, 0.2f);
+        addCuboidTp(meshStation, -7.5f + i * 7.5f, 1.2f, -6.4f, 5.5f, 2.4f, 0.5f);
+        addCuboidTp(meshStation, -7.5f + i * 7.5f, 2.5f, -5.8f, 2.4f, 1.2f, 0.2f);
     }
-    addCuboidTp(mesh, -8.8f, 1.6f, -13.2f, 0.35f, 3.2f, 7.0f);
-    addCuboidTp(mesh, 0.0f, 1.6f, -13.2f, 0.35f, 3.2f, 7.0f);
-    addCuboidTp(mesh, 8.8f, 1.6f, -13.2f, 0.35f, 3.2f, 7.0f);
+    addCuboidTp(meshStation, -8.8f, 1.6f, -13.2f, 0.45f, 3.2f, 7.0f);
+    addCuboidTp(meshStation, 0.0f, 1.6f, -13.2f, 0.45f, 3.2f, 7.0f);
+    addCuboidTp(meshStation, 8.8f, 1.6f, -13.2f, 0.45f, 3.2f, 7.0f);
 
-    auto placeBuildingTp = [&](float cx, float cz, int id) {
+    auto placeBuildingTp = [&](std::vector<float>& dest, float cx, float cz, int id) {
         if (std::fabs(cx) < kStationFlatRadius + 5.0f && std::fabs(cz) < kStationFlatRadius + 5.0f) {
             return;
         }
         const int hKey = hash2(static_cast<int>(cx * 2.0f), static_cast<int>(cz * 2.0f)) ^ id;
         const float h = 10.0f + static_cast<float>((std::abs(hKey) % 38));
-        const float w = 4.2f + static_cast<float>((std::abs(hKey / 7) % 5));
-        const float d = 4.2f + static_cast<float>((std::abs(hKey / 13) % 5));
+        const float w = 5.4f + static_cast<float>((std::abs(hKey / 7) % 7));
+        const float d = 5.4f + static_cast<float>((std::abs(hKey / 13) % 7));
         const float y0 = scene.terrainHeight(cx, cz);
-        addCuboidTp(mesh, cx, y0 + h * 0.5f, cz, w, h, d);
+        addCuboidTp(dest, cx, y0 + h * 0.5f, cz, w, h, d);
     };
 
     const float he = kTerrainHalfExtent;
     for (int i = -22; i <= 22; ++i) {
         const float x = static_cast<float>(i) * 9.0f;
-        placeBuildingTp(x, -(he - 14.0f), i);
-        placeBuildingTp(x, (he - 14.0f), i + 1000);
+        placeBuildingTp(meshCity, x, -(he - 14.0f), i);
+        placeBuildingTp(meshCity, x, (he - 14.0f), i + 1000);
     }
     for (int j = -18; j <= 18; ++j) {
         const float z = static_cast<float>(j) * 9.0f;
-        placeBuildingTp(-(he - 14.0f), z, j + 2000);
-        placeBuildingTp((he - 14.0f), z, j + 3000);
+        placeBuildingTp(meshCity, -(he - 14.0f), z, j + 2000);
+        placeBuildingTp(meshCity, (he - 14.0f), z, j + 3000);
     }
     for (int t = 0; t < 48; ++t) {
         const int hk = hash2(t, 909);
@@ -819,10 +857,13 @@ void Renderer::buildTriplanarMesh(const Scene& scene) {
         }
         const float y0 = scene.terrainHeight(cx, cz);
         const float h = 18.0f + static_cast<float>((std::abs(hk) % 50));
-        addCuboidTp(mesh, cx, y0 + h * 0.5f, cz, 6.0f, h, 6.0f);
+        const float foot = 8.8f + static_cast<float>((std::abs(hk / 3) % 5)) * 0.55f;
+        addCuboidTp(meshTower, cx, y0 + h * 0.5f, cz, foot, h, foot);
     }
 
-    uploadTriplanarMesh(m_triplanarVao, m_triplanarVbo, mesh, &m_triplanarVertexCount);
+    uploadTriplanarMesh(m_tpStationVao, m_tpStationVbo, meshStation, &m_tpStationVertexCount);
+    uploadTriplanarMesh(m_tpCityVao, m_tpCityVbo, meshCity, &m_tpCityVertexCount);
+    uploadTriplanarMesh(m_tpTowerVao, m_tpTowerVbo, meshTower, &m_tpTowerVertexCount);
 }
 
 void Renderer::buildColoredStatic(const Scene& scene) {
@@ -953,7 +994,8 @@ bool Renderer::init(const std::string& shaderRoot, const Scene& scene) {
     buildColoredStatic(scene);
     buildWater(scene);
     buildInterior();
-    return m_terrainVertexCount > 0 && m_roadVertexCount > 0 && m_triplanarVertexCount > 0;
+    return m_terrainVertexCount > 0 && m_roadVertexCount > 0 && m_tpStationVertexCount > 0 && m_tpCityVertexCount > 0 &&
+        m_tpTowerVertexCount > 0;
 }
 
 void Renderer::drawTexturedQuad(GLuint program, const float* view, const float* proj, const float* model, float nx,
@@ -1203,36 +1245,43 @@ void Renderer::drawBuses(const Scene& scene, const float* view, const float* pro
         v[11] = -hz;
         face(texBottom, 0.05f, 0.05f, 0.06f, 0, -1, 0, 0, 0, 2, 2);
 
-        float G[16];
-        mat4Translate(pos.x, 0.9f + H * 0.48f, pos.z, T);
-        mat4RotateY(heading * (kMathPi / 180.0f), R);
-        mat4Mul(T, R, G);
-        glUseProgram(prog);
-        glUniformMatrix4fv(locM, 1, GL_FALSE, G);
-        glUniformMatrix4fv(locV, 1, GL_FALSE, view);
-        glUniformMatrix4fv(locP, 1, GL_FALSE, proj);
-        glUniform1f(glGetUniformLocation(prog, "uUseTexture"), 0.0f);
-        glUniform3f(glGetUniformLocation(prog, "uBaseColor"), 0.04f, 0.78f, 0.32f);
-        scratch.clear();
-        addCuboid(scratch, 0, 0, 0, L * 0.99f, 0.22f, W * 0.98f, 0.04f, 0.78f, 0.32f);
-        static GLuint gVao = 0, gVbo = 0;
-        if (gVao == 0) {
-            glGenVertexArrays(1, &gVao);
-            glGenBuffers(1, &gVbo);
+        const float ridge = hy + 0.11f;
+        float rv[12] = {-L * 0.495f, ridge, hz * 0.96f, L * 0.495f, ridge, hz * 0.96f, L * 0.495f, ridge, -hz * 0.96f,
+            -L * 0.495f, ridge, -hz * 0.96f};
+        if (texTop != 0) {
+            drawTexturedQuad(prog, view, proj, M, 0, 1, 0, rv, 0, 0, 3.2f, 2.2f, texTop, 0.12f, 0.55f, 0.22f, scratch);
+        } else {
+            float G[16];
+            mat4Translate(pos.x, 0.9f + H * 0.48f, pos.z, T);
+            mat4RotateY(heading * (kMathPi / 180.0f), R);
+            mat4Mul(T, R, G);
+            glUseProgram(prog);
+            glUniformMatrix4fv(locM, 1, GL_FALSE, G);
+            glUniformMatrix4fv(locV, 1, GL_FALSE, view);
+            glUniformMatrix4fv(locP, 1, GL_FALSE, proj);
+            glUniform1f(glGetUniformLocation(prog, "uUseTexture"), 0.0f);
+            glUniform3f(glGetUniformLocation(prog, "uBaseColor"), 0.04f, 0.78f, 0.32f);
+            scratch.clear();
+            addCuboid(scratch, 0, 0, 0, L * 0.99f, 0.22f, W * 0.98f, 0.04f, 0.78f, 0.32f);
+            static GLuint gVao = 0, gVbo = 0;
+            if (gVao == 0) {
+                glGenVertexArrays(1, &gVao);
+                glGenBuffers(1, &gVbo);
+            }
+            glBindVertexArray(gVao);
+            glBindBuffer(GL_ARRAY_BUFFER, gVbo);
+            glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(scratch.size() * sizeof(float)), scratch.data(),
+                GL_STREAM_DRAW);
+            const GLsizei stride2 = static_cast<GLsizei>(kStride * sizeof(float));
+            glEnableVertexAttribArray(0);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride2, reinterpret_cast<void*>(0));
+            glEnableVertexAttribArray(1);
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride2, reinterpret_cast<void*>(3 * sizeof(float)));
+            glEnableVertexAttribArray(2);
+            glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride2, reinterpret_cast<void*>(6 * sizeof(float)));
+            glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(scratch.size() / kStride));
+            glBindVertexArray(0);
         }
-        glBindVertexArray(gVao);
-        glBindBuffer(GL_ARRAY_BUFFER, gVbo);
-        glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(scratch.size() * sizeof(float)), scratch.data(),
-            GL_STREAM_DRAW);
-        const GLsizei stride2 = static_cast<GLsizei>(kStride * sizeof(float));
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride2, reinterpret_cast<void*>(0));
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride2, reinterpret_cast<void*>(3 * sizeof(float)));
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride2, reinterpret_cast<void*>(6 * sizeof(float)));
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(scratch.size() / kStride));
-        glBindVertexArray(0);
     }
 }
 
@@ -1347,9 +1396,18 @@ void Renderer::drawOutdoor(const Scene& scene, const CameraController& camera, c
     glUniform1f(glGetUniformLocation(terrainProg, "uShininess"), 24.0f);
     glUniform1f(glGetUniformLocation(terrainProg, "uSpecularStrength"), 0.18f);
     glUniform1f(glGetUniformLocation(terrainProg, "uUseGrassTex"), m_hasGrassTex ? 1.0f : 0.0f);
+    glUniform1f(glGetUniformLocation(terrainProg, "uUsePathTex"), m_hasPathTex ? 1.0f : 0.0f);
+    glUniform1f(glGetUniformLocation(terrainProg, "uUseGroundDetailTex"), m_hasGroundDetailTex ? 1.0f : 0.0f);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_hasGrassTex ? m_grassTex : m_whiteTex);
     glUniform1i(glGetUniformLocation(terrainProg, "uGrassTex"), 0);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, m_hasPathTex ? m_pathTex : m_whiteTex);
+    glUniform1i(glGetUniformLocation(terrainProg, "uPathTex"), 1);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, m_hasGroundDetailTex ? m_groundDetailTex : m_whiteTex);
+    glUniform1i(glGetUniformLocation(terrainProg, "uGroundDetailTex"), 2);
+    glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(m_terrainVao);
     glDrawArrays(GL_TRIANGLES, 0, m_terrainVertexCount);
     glBindVertexArray(0);
@@ -1362,6 +1420,8 @@ void Renderer::drawOutdoor(const Scene& scene, const CameraController& camera, c
     glUniform1f(glGetUniformLocation(terrainProg, "uShininess"), 36.0f);
     glUniform1f(glGetUniformLocation(terrainProg, "uSpecularStrength"), 0.22f);
     glUniform1f(glGetUniformLocation(terrainProg, "uUseGrassTex"), 0.0f);
+    glUniform1f(glGetUniformLocation(terrainProg, "uUsePathTex"), m_hasPathTex ? 1.0f : 0.0f);
+    glUniform1f(glGetUniformLocation(terrainProg, "uUseGroundDetailTex"), m_hasGroundDetailTex ? 1.0f : 0.0f);
     glBindVertexArray(m_staticVao);
     glDrawArrays(GL_TRIANGLES, 0, m_staticVertexCount);
     glBindVertexArray(0);
@@ -1386,21 +1446,36 @@ void Renderer::drawOutdoor(const Scene& scene, const CameraController& camera, c
     glBindVertexArray(0);
 
     GLuint tpP = m_triplanar.id();
-    bindPhongFogSpots(tpP, camPos, ga, sun, nPt, pts, nSpot, spots, settings);
-    glUseProgram(tpP);
-    glUniformMatrix4fv(glGetUniformLocation(tpP, "uModel"), 1, GL_FALSE, model);
-    glUniformMatrix4fv(glGetUniformLocation(tpP, "uView"), 1, GL_FALSE, view);
-    glUniformMatrix4fv(glGetUniformLocation(tpP, "uProjection"), 1, GL_FALSE, proj);
-    glUniform1f(glGetUniformLocation(tpP, "uTexScale"), 0.11f);
-    glUniform3f(glGetUniformLocation(tpP, "uTint"), 1.0f, 1.0f, 1.0f);
-    glUniform1f(glGetUniformLocation(tpP, "uShininess"), 22.0f);
-    glUniform1f(glGetUniformLocation(tpP, "uSpecularStrength"), 0.16f);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_hasBuildingTex ? m_buildingTex : m_whiteTex);
-    glUniform1i(glGetUniformLocation(tpP, "uTex"), 0);
-    glBindVertexArray(m_triplanarVao);
-    glDrawArrays(GL_TRIANGLES, 0, m_triplanarVertexCount);
+    auto drawTriplanarGroup = [&](GLuint tex, bool hasTex, float scale, float tintR, float tintG, float tintB) {
+        bindPhongFogSpots(tpP, camPos, ga, sun, nPt, pts, nSpot, spots, settings);
+        glUseProgram(tpP);
+        glUniformMatrix4fv(glGetUniformLocation(tpP, "uModel"), 1, GL_FALSE, model);
+        glUniformMatrix4fv(glGetUniformLocation(tpP, "uView"), 1, GL_FALSE, view);
+        glUniformMatrix4fv(glGetUniformLocation(tpP, "uProjection"), 1, GL_FALSE, proj);
+        glUniform1f(glGetUniformLocation(tpP, "uTexScale"), scale);
+        glUniform3f(glGetUniformLocation(tpP, "uTint"), tintR, tintG, tintB);
+        glUniform1f(glGetUniformLocation(tpP, "uShininess"), 22.0f);
+        glUniform1f(glGetUniformLocation(tpP, "uSpecularStrength"), 0.16f);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, hasTex ? tex : m_whiteTex);
+        glUniform1i(glGetUniformLocation(tpP, "uTex"), 0);
+    };
+    drawTriplanarGroup(m_buildingTex, m_hasBuildingTex, 0.10f, 1.0f, 1.0f, 1.0f);
+    glBindVertexArray(m_tpStationVao);
+    glDrawArrays(GL_TRIANGLES, 0, m_tpStationVertexCount);
     glBindVertexArray(0);
+
+    drawTriplanarGroup(m_buildingCityTex, m_hasBuildingCityTex, 0.11f, 1.02f, 0.98f, 0.95f);
+    glBindVertexArray(m_tpCityVao);
+    glDrawArrays(GL_TRIANGLES, 0, m_tpCityVertexCount);
+    glBindVertexArray(0);
+
+    drawTriplanarGroup(m_buildingTowerTex, m_hasBuildingTowerTex, 0.065f, 0.95f, 0.97f, 1.02f);
+    glBindVertexArray(m_tpTowerVao);
+    glDrawArrays(GL_TRIANGLES, 0, m_tpTowerVertexCount);
+    glBindVertexArray(0);
+
+    drawWindBanner(scene, view, proj, camPos, timeSec, settings);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1411,14 +1486,7 @@ void Renderer::drawOutdoor(const Scene& scene, const CameraController& camera, c
     glUniformMatrix4fv(glGetUniformLocation(wprog, "uProjection"), 1, GL_FALSE, proj);
     glUniform3fv(glGetUniformLocation(wprog, "uCameraPos"), 1, camPos);
     applyFogUniforms(wprog, settings.fogDensity, settings.fogColor);
-    float Ldir[3] = {40.0f, 55.0f, 10.0f};
-    float ll = std::sqrt(Ldir[0] * Ldir[0] + Ldir[1] * Ldir[1] + Ldir[2] * Ldir[2]);
-    if (ll > 1e-5f) {
-        Ldir[0] /= ll;
-        Ldir[1] /= ll;
-        Ldir[2] /= ll;
-    }
-    glUniform3fv(glGetUniformLocation(wprog, "uLightDir"), 1, Ldir);
+    glUniform3fv(glGetUniformLocation(wprog, "uLightDir"), 1, sun.dir);
     glUniform1f(glGetUniformLocation(wprog, "uTime"), timeSec);
     GLint uLakeC = glGetUniformLocation(wprog, "uLakeCenterXZ");
     if (uLakeC >= 0) {
@@ -1438,6 +1506,61 @@ void Renderer::drawOutdoor(const Scene& scene, const CameraController& camera, c
     glDisable(GL_BLEND);
 
     drawBuses(scene, view, proj, camPos, settings);
+}
+
+void Renderer::drawWindBanner(const Scene& scene, const float* view, const float* proj, const float* camPos,
+    float timeSec, const AppRenderSettings& settings) {
+    if (!m_hasFlagTex) {
+        return;
+    }
+    GLuint prog = m_standard.id();
+    PointLight pts[2];
+    pts[0].position[0] = 0;
+    pts[0].position[1] = 12;
+    pts[0].position[2] = 0;
+    pts[0].ambient[0] = pts[0].ambient[1] = pts[0].ambient[2] = 0.03f;
+    pts[0].diffuse[0] = 0.45f;
+    pts[0].diffuse[1] = 0.43f;
+    pts[0].diffuse[2] = 0.35f;
+    pts[0].specular[0] = 0.28f;
+    pts[0].specular[1] = 0.25f;
+    pts[0].specular[2] = 0.20f;
+    pts[0].constant = 1.0f;
+    pts[0].linear = 0.03f;
+    pts[0].quadratic = 0.004f;
+    pts[1] = pts[0];
+    pts[1].position[0] = 40;
+    pts[1].position[1] = 20;
+    pts[1].position[2] = 10;
+    Spotlight spots[kMaxSpotlights];
+    const int nSpot = fillSpotlights(scene, spots);
+    DirectionalLight sun = makeSun(settings);
+    float ga[3] = {0.26f * settings.globalAmbientScale, 0.26f * settings.globalAmbientScale,
+        0.30f * settings.globalAmbientScale};
+    const int nPt = settings.pointLightsEnabled ? 2 : 0;
+    bindPhongFogSpots(prog, camPos, ga, sun, nPt, pts, nSpot, spots, settings);
+    glUseProgram(prog);
+    glUniformMatrix4fv(glGetUniformLocation(prog, "uView"), 1, GL_FALSE, view);
+    glUniformMatrix4fv(glGetUniformLocation(prog, "uProjection"), 1, GL_FALSE, proj);
+    glUniform1f(glGetUniformLocation(prog, "uShininess"), 26.0f);
+    glUniform1f(glGetUniformLocation(prog, "uSpecularStrength"), 0.2f);
+
+    const float poleX = 28.5f;
+    const float poleZ = -36.0f;
+    const float baseY = scene.terrainHeight(poleX, poleZ);
+    const float swayRad = (11.0f + 22.0f * std::sin(timeSec * 2.25f)) * (kMathPi / 180.0f);
+    const float flap = 0.2f * std::sin(timeSec * 5.85f);
+
+    float T[16], R[16], M[16];
+    mat4Translate(poleX, baseY + 3.5f, poleZ, T);
+    mat4RotateY(swayRad, R);
+    mat4Mul(T, R, M);
+
+    std::vector<float> scratch;
+    float vf[12] = {0, -0.2f, 0, 0, 2.6f, 0, 0, 2.6f, 3.25f + flap, 0, -0.2f, 3.25f};
+    drawTexturedQuad(prog, view, proj, M, 1, 0, 0, vf, 0, 0, 1, 1, m_flagTex, 0.85f, 0.78f, 0.55f, scratch);
+    float vb[12] = {0, -0.2f, 0, 0, -0.2f, 3.25f, 0, 2.6f, 3.25f + flap, 0, 2.6f, 0};
+    drawTexturedQuad(prog, view, proj, M, -1, 0, 0, vb, 1, 0, 0, 1, m_flagTex, 0.85f, 0.78f, 0.55f, scratch);
 }
 
 void Renderer::draw(const Scene& scene, const CameraController& camera, const Bus& driverBus, int fbWidth, int fbHeight,

@@ -62,6 +62,18 @@ static void keyCallback(GLFWwindow* window, int key, int /*scancode*/, int actio
             g_renderSettings.sunAmbientScale = std::max(0.1f, g_renderSettings.sunAmbientScale - 0.08f);
         } else if (key == GLFW_KEY_8) {
             g_renderSettings.sunAmbientScale = std::min(1.6f, g_renderSettings.sunAmbientScale + 0.08f);
+        } else if (key == GLFW_KEY_Z) {
+            g_renderSettings.sunAzimuthDeg -= 4.0f;
+        } else if (key == GLFW_KEY_X) {
+            g_renderSettings.sunAzimuthDeg += 4.0f;
+        } else if (key == GLFW_KEY_C) {
+            g_renderSettings.sunElevationDeg = std::max(8.0f, g_renderSettings.sunElevationDeg - 3.0f);
+        } else if (key == GLFW_KEY_V) {
+            g_renderSettings.sunElevationDeg = std::min(85.0f, g_renderSettings.sunElevationDeg + 3.0f);
+        } else if (key == GLFW_KEY_MINUS) {
+            g_renderSettings.specularScale = std::max(0.0f, g_renderSettings.specularScale - 0.12f);
+        } else if (key == GLFW_KEY_EQUAL) {
+            g_renderSettings.specularScale = std::min(2.2f, g_renderSettings.specularScale + 0.12f);
         } else if (key == GLFW_KEY_P) {
             g_renderSettings.pointLightsEnabled = !g_renderSettings.pointLightsEnabled;
         } else if (key == GLFW_KEY_O) {
