@@ -18,6 +18,7 @@ CameraController::CameraController()
       m_distance(65.0f),
       m_panX(0.0f),
       m_panY(0.0f),
+      m_panZ(0.0f),
       m_leftMouseDown(false),
       m_lastMouseX(0.0),
       m_lastMouseY(0.0) {}
@@ -99,7 +100,7 @@ void CameraController::getCameraWorldPosition(const Bus& driverBus, float* outXY
     const float pitch = m_pitchDeg * (PI / 180.0f);
     outXYZ[0] = m_panX + m_distance * std::cos(pitch) * std::cos(yaw);
     outXYZ[1] = m_panY + m_distance * std::sin(pitch);
-    outXYZ[2] = m_distance * std::cos(pitch) * std::sin(yaw);
+    outXYZ[2] = m_panZ + m_distance * std::cos(pitch) * std::sin(yaw);
 }
 
 void CameraController::getViewMatrix(const Bus& driverBus, float* out) const {
@@ -165,7 +166,7 @@ void CameraController::getViewMatrix(const Bus& driverBus, float* out) const {
         getCameraWorldPosition(driverBus, eye);
         center[0] = m_panX;
         center[1] = m_panY;
-        center[2] = 0.0f;
+        center[2] = m_panZ;
     }
 
     mat4LookAt(eye[0], eye[1], eye[2], center[0], center[1], center[2], up[0], up[1], up[2], out);
@@ -212,6 +213,26 @@ void CameraController::onKeyboard(int key) {
             break;
         case GLFW_KEY_L:
             m_panX += 1.0f;
+            break;
+        case GLFW_KEY_W:
+            if (m_mode == CameraMode::FREE) {
+                m_panZ -= 1.5f;
+            }
+            break;
+        case GLFW_KEY_S:
+            if (m_mode == CameraMode::FREE) {
+                m_panZ += 1.5f;
+            }
+            break;
+        case GLFW_KEY_A:
+            if (m_mode == CameraMode::FREE) {
+                m_panX -= 1.5f;
+            }
+            break;
+        case GLFW_KEY_D:
+            if (m_mode == CameraMode::FREE) {
+                m_panX += 1.5f;
+            }
             break;
         default:
             break;

@@ -46,6 +46,7 @@ private:
     float m_distance;
     float m_panX;
     float m_panY;
+    float m_panZ;
     bool m_leftMouseDown;
     double m_lastMouseX;
     double m_lastMouseY;

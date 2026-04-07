@@ -21,4 +21,6 @@ struct AppRenderSettings {
     bool pointLightsEnabled = true;
     bool spotLightsEnabled = true;
     bool nightMode = false;
+    bool sunEnabled = true;
+    bool rainEnabled = false;
 };

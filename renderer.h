@@ -97,6 +97,10 @@ private:
     GLuint m_npcTex = 0;
     GLuint m_waterTex = 0;
     GLuint m_whiteTex = 0;
+    GLuint m_ticketCounterTex = 0;
+    GLuint m_roofTex = 0;
+    GLuint m_grassMixTex = 0;
+    GLuint m_groundMixTex = 0;
 
     bool m_hasGrassTex = false;
     bool m_hasRoadTex = false;
@@ -110,6 +114,10 @@ private:
     bool m_hasChairTex = false;
     bool m_hasNpcTex = false;
     bool m_hasWaterTex = false;
+    bool m_hasTicketCounterTex = false;
+    bool m_hasRoofTex = false;
+    bool m_hasGrassMixTex = false;
+    bool m_hasGroundMixTex = false;
 
     std::string m_shaderRoot;
 };

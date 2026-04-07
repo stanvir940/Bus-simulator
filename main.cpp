@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
+#include <unistd.h>
 
 namespace {
 Scene g_scene;
@@ -19,6 +20,37 @@ int g_winWidth = 1280;
 int g_winHeight = 720;
 WorldMode g_worldMode = WorldMode::Outdoor;
 AppRenderSettings g_renderSettings;
+enum class SoundMode { None, Outdoor, TicketOffice };
+SoundMode g_soundMode = SoundMode::None;
+
+void stopAllSoundNow() {
+#if defined(__APPLE__)
+    std::system("sh -c 'if [ -f /tmp/busstandsim_sound.pid ]; then kill $(cat /tmp/busstandsim_sound.pid) >/dev/null 2>&1; rm -f /tmp/busstandsim_sound.pid; fi'");
+    std::system("pkill -f \"ambient-sound.mp3\" >/dev/null 2>&1");
+    std::system("pkill -f \"ticket-counter-sound.mp3\" >/dev/null 2>&1");
+    std::system("killall afplay >/dev/null 2>&1");
+#endif
+    g_soundMode = SoundMode::None;
+}
+
+void switchSound(SoundMode mode) {
+    if (g_soundMode == mode) {
+        return;
+    }
+#if defined(__APPLE__)
+    stopAllSoundNow();
+    if (mode == SoundMode::Outdoor) {
+        std::system(
+            "sh -c '(while true; do afplay ../sounds/ambient-sound.mp3 >/dev/null 2>&1 || afplay sounds/ambient-sound.mp3 >/dev/null 2>&1; sleep 0.2; done) & echo $! > /tmp/busstandsim_sound.pid'");
+    } else if (mode == SoundMode::TicketOffice) {
+        std::system(
+            "sh -c '(while true; do afplay ../sounds/ticket-counter-sound.mp3 >/dev/null 2>&1 || afplay sounds/ticket-counter-sound.mp3 >/dev/null 2>&1; sleep 0.2; done) & echo $! > /tmp/busstandsim_sound.pid'");
+    }
+#else
+    (void)mode;
+#endif
+    g_soundMode = mode;
+}
 }
 
 static void framebufferSizeCallback(GLFWwindow*, int w, int h) {
@@ -29,13 +61,15 @@ static void framebufferSizeCallback(GLFWwindow*, int w, int h) {
 
 static void keyCallback(GLFWwindow* window, int key, int /*scancode*/, int action, int /*mods*/) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+        stopAllSoundNow();
         glfwSetWindowShouldClose(window, GLFW_TRUE);
         return;
     }
     const bool down = (action != GLFW_RELEASE);
     const bool outdoor = (g_worldMode == WorldMode::Outdoor);
     if (action == GLFW_PRESS || action == GLFW_RELEASE) {
-        if (outdoor && (key == GLFW_KEY_W || key == GLFW_KEY_S || key == GLFW_KEY_A || key == GLFW_KEY_D)) {
+        if (outdoor && g_camera.getMode() != CameraMode::FREE &&
+            (key == GLFW_KEY_W || key == GLFW_KEY_S || key == GLFW_KEY_A || key == GLFW_KEY_D)) {
             g_scene.onKeyState(key, down);
         }
         if (outdoor && (key == GLFW_KEY_LEFT || key == GLFW_KEY_RIGHT || key == GLFW_KEY_UP || key == GLFW_KEY_DOWN)) {
@@ -46,6 +80,11 @@ static void keyCallback(GLFWwindow* window, int key, int /*scancode*/, int actio
         if (key == GLFW_KEY_B) {
             g_worldMode = (g_worldMode == WorldMode::Outdoor) ? WorldMode::TicketOffice : WorldMode::Outdoor;
             g_camera.setInteriorMode(g_worldMode == WorldMode::TicketOffice);
+            if (g_worldMode == WorldMode::TicketOffice) {
+                switchSound(SoundMode::TicketOffice);
+            } else {
+                switchSound(SoundMode::Outdoor);
+            }
         } else if (key == GLFW_KEY_LEFT_BRACKET) {
             g_renderSettings.fogDensity = std::max(0.002f, g_renderSettings.fogDensity - 0.002f);
         } else if (key == GLFW_KEY_RIGHT_BRACKET) {
@@ -80,6 +119,14 @@ static void keyCallback(GLFWwindow* window, int key, int /*scancode*/, int actio
             g_renderSettings.spotLightsEnabled = !g_renderSettings.spotLightsEnabled;
         } else if (key == GLFW_KEY_N) {
             g_renderSettings.nightMode = !g_renderSettings.nightMode;
+        } else if (key == GLFW_KEY_R) {
+            g_renderSettings.rainEnabled = !g_renderSettings.rainEnabled;
+        } else if (key == GLFW_KEY_T) {
+            g_renderSettings.sunEnabled = !g_renderSettings.sunEnabled;
+        } else if (key == GLFW_KEY_L) {
+            const bool on = !(g_renderSettings.pointLightsEnabled || g_renderSettings.spotLightsEnabled);
+            g_renderSettings.pointLightsEnabled = on;
+            g_renderSettings.spotLightsEnabled = on;
         } else {
             g_camera.onKeyboard(key);
         }
@@ -170,7 +217,12 @@ int main() {
     glfwGetFramebufferSize(window, &g_winWidth, &g_winHeight);
     glViewport(0, 0, g_winWidth, g_winHeight);
 
+    if (access("../sounds/ambient-sound.mp3", F_OK) != 0 && access("sounds/ambient-sound.mp3", F_OK) != 0) {
+        std::fprintf(stderr, "Warning: ambient sound file not found in ../sounds or sounds\n");
+    }
+
     g_prevTime = glfwGetTime();
+    switchSound(SoundMode::Outdoor);
 
     while (!glfwWindowShouldClose(window)) {
         const double now = glfwGetTime();
@@ -193,6 +245,7 @@ int main() {
         glfwPollEvents();
     }
 
+    stopAllSoundNow();
     glfwDestroyWindow(window);
     glfwTerminate();
     return 0;

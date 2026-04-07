@@ -21,18 +21,18 @@ bool Bus::s_windowTextureOk = false;
 namespace {
 
 unsigned int loadNamedTexture(const char* baseFileStem) {
-    char pathBuf[8][256];
-    const char* paths[8];
+    char pathBuf[12][256];
+    const char* paths[12];
     int n = 0;
     const char* prefixes[] = {
         "textures/",
         "../textures/",
         "../../BusStandSimulator/textures/",
     };
-    const char* exts[] = {".png", ".jpg"};
+    const char* exts[] = {".png", ".jpg", ".webp"};
     for (const char* pre : prefixes) {
         for (const char* ext : exts) {
-            if (n >= 8) {
+            if (n >= 12) {
                 break;
             }
             const int written = snprintf(pathBuf[n], sizeof(pathBuf[n]), "%s%s%s", pre, baseFileStem, ext);
@@ -41,7 +41,7 @@ unsigned int loadNamedTexture(const char* baseFileStem) {
                 ++n;
             }
         }
-        if (n >= 8) {
+        if (n >= 12) {
             break;
         }
     }
@@ -78,6 +78,9 @@ void Bus::initGraphics() {
         "textures/bus_body.jpg",
         "textures/bus_body1.png",
         "textures/bus_body1.jpg",
+        "textures/bus_back.jpg",
+        "textures/bus_front.jpg",
+        "textures/bus_window.webp",
         "../textures/bus_body.png",
         "../textures/bus_body.jpg",
         "../textures/bus_body1.png",
@@ -95,7 +98,10 @@ void Bus::initGraphics() {
     s_backTexture = loadNamedTexture("bus_back");
     s_backTextureOk = (s_backTexture != 0);
 
-    s_windowTexture = loadNamedTexture("bus_window");
+    s_windowTexture = loadNamedTexture("bus-window");
+    if (s_windowTexture == 0) {
+        s_windowTexture = loadNamedTexture("bus_window");
+    }
     s_windowTextureOk = (s_windowTexture != 0);
 }
 

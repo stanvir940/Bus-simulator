@@ -59,13 +59,13 @@ float Scene::terrainHeight(float x, float z) const {
     // Lake basin: bowl so water sits below rim (not “floating in the sky”).
     const float lakeCx = 63.0f;
     const float lakeCz = 62.0f;
-    const float ldx = (x - lakeCx) / 22.0f;
-    const float ldz = (z - lakeCz) / 18.0f;
+    const float ldx = (x - lakeCx) / 34.0f;
+    const float ldz = (z - lakeCz) / 29.0f;
     const float lakeT = ldx * ldx + ldz * ldz;
     float lakeDepress = 0.0f;
     if (lakeT < 1.0f) {
         const float rim = 1.0f - lakeT;
-        lakeDepress = -1.35f * rim * rim;
+        lakeDepress = -1.85f * rim * rim;
     }
 
     const float dist = std::sqrt(x * x + z * z);

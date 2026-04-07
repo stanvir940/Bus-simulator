@@ -38,6 +38,10 @@ uniform sampler2D uPathTex;
 uniform float uUsePathTex;
 uniform sampler2D uGroundDetailTex;
 uniform float uUseGroundDetailTex;
+uniform sampler2D uGrassMixTex;
+uniform float uUseGrassMixTex;
+uniform sampler2D uGroundMixTex;
+uniform float uUseGroundMixTex;
 
 out vec4 FragColor;
 
@@ -87,6 +91,18 @@ void main() {
         vec3 det = texture(uGroundDetailTex, uvD).rgb;
         float patch = 0.5 + 0.5 * sin(vWorldPos.x * 0.07 + vWorldPos.z * 0.09);
         albedo = mix(albedo, albedo * det, 0.18 + 0.12 * patch);
+    }
+    if (uUseGrassMixTex > 0.5) {
+        vec2 uvM = vWorldPos.xz * 0.06;
+        vec3 mx = texture(uGrassMixTex, uvM).rgb;
+        float mask = 0.5 + 0.5 * sin(vWorldPos.x * 0.031 - vWorldPos.z * 0.044);
+        albedo = mix(albedo, albedo * mx, 0.18 * mask);
+    }
+    if (uUseGroundMixTex > 0.5) {
+        vec2 uvG = vWorldPos.xz * 0.045;
+        vec3 gx = texture(uGroundMixTex, uvG).rgb;
+        float slopeMask = clamp(1.0 - N.y, 0.0, 1.0);
+        albedo = mix(albedo, albedo * gx, 0.35 * slopeMask);
     }
     float inFlat = step(abs(vWorldPos.x), 46.0) * step(abs(vWorldPos.z), 46.0);
     float pathEw = (1.0 - smoothstep(1.15, 2.35, abs(vWorldPos.z))) * inFlat;
