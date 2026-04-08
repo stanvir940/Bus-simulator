@@ -68,8 +68,7 @@ static void keyCallback(GLFWwindow* window, int key, int /*scancode*/, int actio
     const bool down = (action != GLFW_RELEASE);
     const bool outdoor = (g_worldMode == WorldMode::Outdoor);
     if (action == GLFW_PRESS || action == GLFW_RELEASE) {
-        if (outdoor && g_camera.getMode() != CameraMode::FREE &&
-            (key == GLFW_KEY_W || key == GLFW_KEY_S || key == GLFW_KEY_A || key == GLFW_KEY_D)) {
+        if (outdoor && (key == GLFW_KEY_I || key == GLFW_KEY_K || key == GLFW_KEY_J || key == GLFW_KEY_L)) {
             g_scene.onKeyState(key, down);
         }
         if (outdoor && (key == GLFW_KEY_LEFT || key == GLFW_KEY_RIGHT || key == GLFW_KEY_UP || key == GLFW_KEY_DOWN)) {
@@ -117,7 +116,11 @@ static void keyCallback(GLFWwindow* window, int key, int /*scancode*/, int actio
             g_renderSettings.pointLightsEnabled = !g_renderSettings.pointLightsEnabled;
         } else if (key == GLFW_KEY_O) {
             g_renderSettings.spotLightsEnabled = !g_renderSettings.spotLightsEnabled;
+        } else if (key == GLFW_KEY_M) {
+            g_scene.toggleAutoBus1();
         } else if (key == GLFW_KEY_N) {
+            g_scene.toggleAutoBus2();
+        } else if (key == GLFW_KEY_H) {
             g_renderSettings.nightMode = !g_renderSettings.nightMode;
         } else if (key == GLFW_KEY_R) {
             g_renderSettings.rainEnabled = !g_renderSettings.rainEnabled;

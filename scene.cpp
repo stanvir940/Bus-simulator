@@ -17,7 +17,9 @@ Scene::Scene()
       m_keyA(false),
       m_keyD(false),
       m_specialLeft(false),
-      m_specialRight(false) {
+      m_specialRight(false),
+      m_autoBus1Enabled(true),
+      m_autoBus2Enabled(true) {
     const float loopLength = 216.0f;
     m_buses.emplace_back(7.0f, 0.0f, 5.2f, 2.3f, 2.0f);
     m_buses.emplace_back(7.0f, loopLength * 0.33f, 5.2f, 2.3f, 2.0f);
@@ -27,24 +29,58 @@ Scene::Scene()
 
 void Scene::update(float dt) {
     m_timeSec += dt;
-    if (!m_buses.empty()) {
+    auto collidesDriverWithAny = [&]() {
+        if (m_buses.size() < 2) return false;
+        const Vec3 p0 = m_buses[0].getPosition();
+        for (size_t i = 1; i < m_buses.size(); ++i) {
+            const Vec3 pi = m_buses[i].getPosition();
+            const float dx = p0.x - pi.x;
+            const float dz = p0.z - pi.z;
+            const float dist2 = dx * dx + dz * dz;
+            const float stopR = 5.0f;
+            if (dist2 < stopR * stopR) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    const bool collideBefore = collidesDriverWithAny();
+    if (!m_buses.empty() && !collideBefore) {
         m_buses[0].control(m_keyW, m_keyS, (m_keyA || m_specialLeft), (m_keyD || m_specialRight), dt);
     }
-    for (Bus& bus : m_buses) {
-        bus.update(dt);
+    for (size_t i = 0; i < m_buses.size(); ++i) {
+        if (collideBefore) {
+            continue;  // stop all buses while colliding
+        }
+        if (i == 1 && !m_autoBus1Enabled) {
+            continue;
+        }
+        if (i == 2 && !m_autoBus2Enabled) {
+            continue;
+        }
+        m_buses[i].update(dt);
     }
 }
 
 void Scene::onKeyState(int key, bool isPressed) {
-    if (key == GLFW_KEY_W) m_keyW = isPressed;
-    if (key == GLFW_KEY_S) m_keyS = isPressed;
-    if (key == GLFW_KEY_A) m_keyA = isPressed;
-    if (key == GLFW_KEY_D) m_keyD = isPressed;
+    if (key == GLFW_KEY_W || key == GLFW_KEY_KP_8 || key == GLFW_KEY_I) m_keyW = isPressed;
+    if (key == GLFW_KEY_S || key == GLFW_KEY_KP_5 || key == GLFW_KEY_K) m_keyS = isPressed;
+    if (key == GLFW_KEY_A || key == GLFW_KEY_KP_4 || key == GLFW_KEY_J) m_keyA = isPressed;
+    if (key == GLFW_KEY_D || key == GLFW_KEY_KP_6 || key == GLFW_KEY_L) m_keyD = isPressed;
 }
 
 void Scene::onSpecialState(int key, bool isPressed) {
     if (key == GLFW_KEY_LEFT) m_specialLeft = isPressed;
     if (key == GLFW_KEY_RIGHT) m_specialRight = isPressed;
+}
+
+void Scene::toggleAutoBus1() {
+    m_autoBus1Enabled = !m_autoBus1Enabled;
+}
+
+void Scene::toggleAutoBus2() {
+    m_autoBus2Enabled = !m_autoBus2Enabled;
 }
 
 const Bus& Scene::getDriverBus() const {

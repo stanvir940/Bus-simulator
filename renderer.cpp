@@ -95,6 +95,26 @@ void addCylinderY(std::vector<float>& v, float cx, float y0, float cz, float rad
     }
 }
 
+void addCylinderX(std::vector<float>& v, float x0, float cy, float cz, float radius, float length, int slices, float r,
+    float g, float b) {
+    const int n = std::max(10, slices);
+    const float x1 = x0 + length;
+    for (int i = 0; i < n; ++i) {
+        const float t0 = static_cast<float>(i) / static_cast<float>(n) * (2.0f * PI);
+        const float t1 = static_cast<float>(i + 1) / static_cast<float>(n) * (2.0f * PI);
+        const float y0p = cy + std::cos(t0) * radius;
+        const float z0p = cz + std::sin(t0) * radius;
+        const float y1p = cy + std::cos(t1) * radius;
+        const float z1p = cz + std::sin(t1) * radius;
+        const float ny0 = std::cos(t0);
+        const float nz0 = std::sin(t0);
+        const float ny1 = std::cos(t1);
+        const float nz1 = std::sin(t1);
+        pushTri(v, x0, y0p, z0p, x0, y1p, z1p, x1, y1p, z1p, 0, ny1, nz1, r, g, b);
+        pushTri(v, x0, y0p, z0p, x1, y1p, z1p, x1, y0p, z0p, 0, ny0, nz0, r, g, b);
+    }
+}
+
 void addSphere(std::vector<float>& v, float cx, float cy, float cz, float radius, int slices, int stacks, float r,
     float g, float b) {
     const int lat = std::max(2, stacks);
@@ -697,7 +717,10 @@ void Renderer::loadTextures() {
         m_groundDetailTex = loadTextureStem("normal-ground");
     }
     m_hasGroundDetailTex = (m_groundDetailTex != 0);
-    m_flagTex = loadTextureStem("flowers");
+    m_flagTex = loadTextureStem("flag");
+    if (m_flagTex == 0) {
+        m_flagTex = loadTextureStem("flowers");
+    }
     m_hasFlagTex = (m_flagTex != 0);
     m_lampTex = loadTextureStem("lamp");
     m_hasLampTex = (m_lampTex != 0);
@@ -709,9 +732,14 @@ void Renderer::loadTextures() {
     m_hasWaterTex = (m_waterTex != 0);
     m_ticketCounterTex = loadTextureStem("ticket-counter");
     if (m_ticketCounterTex == 0) {
-        const char* tcPaths[] = {"textures/ticket-counter.webp", "../textures/ticket-counter.webp",
-            "../../BusStandSimulator/textures/ticket-counter.webp"};
-        m_ticketCounterTex = loadTextureFromSearchPaths(tcPaths, 3);
+        m_ticketCounterTex = loadTextureStem("ticket_counter");
+    }
+    if (m_ticketCounterTex == 0) {
+        const char* tcPaths[] = {"textures/ticket-counter.webp", "textures/ticket-counter.png", "textures/ticket-counter.jpg",
+            "../textures/ticket-counter.webp", "../textures/ticket-counter.png", "../textures/ticket-counter.jpg",
+            "../../BusStandSimulator/textures/ticket-counter.webp", "../../BusStandSimulator/textures/ticket-counter.png",
+            "../../BusStandSimulator/textures/ticket-counter.jpg"};
+        m_ticketCounterTex = loadTextureFromSearchPaths(tcPaths, 9);
     }
     m_hasTicketCounterTex = (m_ticketCounterTex != 0);
     m_grassMixTex = loadTextureStem("mixed-grass");
@@ -725,8 +753,8 @@ void Renderer::loadTextures() {
 
 int Renderer::fillSpotlights(const Scene& scene, Spotlight* out) {
     int n = 0;
-    const float ci = std::cos(10.0f * kMathPi / 180.0f);
-    const float co = std::cos(34.0f * kMathPi / 180.0f);
+    const float ci = std::cos(4.0f * kMathPi / 180.0f);
+    const float co = std::cos(9.0f * kMathPi / 180.0f);
     auto add = [&](float px, float py, float pz) {
         if (n >= kMaxSpotlights) {
             return;
@@ -740,15 +768,15 @@ int Renderer::fillSpotlights(const Scene& scene, Spotlight* out) {
         s.direction[2] = 0.0f;
         s.cosInner = ci;
         s.cosOuter = co;
-        s.diffuse[0] = 0.95f;
-        s.diffuse[1] = 0.88f;
-        s.diffuse[2] = 0.62f;
-        s.specular[0] = 0.55f;
-        s.specular[1] = 0.5f;
-        s.specular[2] = 0.38f;
+        s.diffuse[0] = 1.55f;
+        s.diffuse[1] = 1.45f;
+        s.diffuse[2] = 1.10f;
+        s.specular[0] = 1.00f;
+        s.specular[1] = 0.92f;
+        s.specular[2] = 0.75f;
         s.constant = 1.0f;
-        s.linear = 0.028f;
-        s.quadratic = 0.085f;
+        s.linear = 0.012f;
+        s.quadratic = 0.05f;
     };
     for (int i = -4; i <= 4; ++i) {
         const float z = static_cast<float>(i) * 38.0f;
@@ -1233,14 +1261,13 @@ void Renderer::drawBuses(const Scene& scene, const float* view, const float* pro
     std::vector<float> scratch;
     scratch.reserve(256);
 
-    const unsigned int texRight =
-        Bus::windowTextureId() != 0 ? Bus::windowTextureId() : (Bus::bodyTextureId() != 0 ? Bus::bodyTextureId() : 0);
+        const unsigned int texRight = Bus::bodyTextureId() != 0 ? Bus::bodyTextureId() : Bus::windowTextureId();
     const unsigned int texLeft = texRight;
     const unsigned int texFront =
         Bus::frontTextureId() != 0 ? Bus::frontTextureId() : (Bus::bodyTextureId() != 0 ? Bus::bodyTextureId() : 0);
     const unsigned int texRear =
         Bus::backTextureId() != 0 ? Bus::backTextureId() : (Bus::bodyTextureId() != 0 ? Bus::bodyTextureId() : 0);
-    const unsigned int texTop = m_hasRoofTex ? m_roofTex : Bus::bodyTextureId();
+    const unsigned int texTop = 0;
     const unsigned int texBottom = Bus::bodyTextureId();
 
     for (const Bus& bus : scene.getBuses()) {
@@ -1310,7 +1337,7 @@ void Renderer::drawBuses(const Scene& scene, const float* view, const float* pro
         v[9] = -hx;
         v[10] = hy;
         v[11] = hz;
-        face(texRight, 0.12f, 0.12f, 0.14f, 0, 0, 1, 0.0f, 0.0f, 12.0f, 1.0f);
+        face(texRight, 1.35f, 1.35f, 1.35f, 0, 0, 1, 0.0f, 1.0f, 4.0f, 0.0f);
 
         v[0] = -hx;
         v[1] = -hy;
@@ -1324,7 +1351,7 @@ void Renderer::drawBuses(const Scene& scene, const float* view, const float* pro
         v[9] = -hx;
         v[10] = hy;
         v[11] = -hz;
-        face(texLeft, 0.12f, 0.12f, 0.14f, 0, 0, -1, 12.0f, 0.0f, 0.0f, 1.0f);
+        face(texLeft, 1.35f, 1.35f, 1.35f, 0, 0, -1, 0.0f, 1.0f, 4.0f, 0.0f);
 
         v[0] = hx;
         v[1] = -hy;
@@ -1338,7 +1365,7 @@ void Renderer::drawBuses(const Scene& scene, const float* view, const float* pro
         v[9] = hx;
         v[10] = hy;
         v[11] = -hz;
-        face(texFront, 0.14f, 0.14f, 0.16f, 1, 0, 0, 1, 1, 0, 0);
+        face(texFront, 1.0f, 1.0f, 1.0f, 1, 0, 0, 1, 1, 0, 0);
 
         v[0] = -hx;
         v[1] = -hy;
@@ -1352,7 +1379,7 @@ void Renderer::drawBuses(const Scene& scene, const float* view, const float* pro
         v[9] = -hx;
         v[10] = hy;
         v[11] = hz;
-        face(texRear, 0.10f, 0.10f, 0.12f, -1, 0, 0, 1, 0, 0, 1);
+        face(texRear, 1.0f, 1.0f, 1.0f, 1, 0, 0, 1, 1, 0, 0);
 
         v[0] = -hx;
         v[1] = hy;
@@ -1366,7 +1393,7 @@ void Renderer::drawBuses(const Scene& scene, const float* view, const float* pro
         v[9] = -hx;
         v[10] = hy;
         v[11] = hz;
-        face(texTop, 0.16f, 0.16f, 0.18f, 0, 1, 0, 0, 0, 2, 2);
+        face(texTop, 0.1f, 0.1f, 0.1f, 0, 1, 0, 0, 0, 2, 2);
 
         v[0] = -hx;
         v[1] = -hy;
@@ -1397,9 +1424,9 @@ void Renderer::drawBuses(const Scene& scene, const float* view, const float* pro
             glUniformMatrix4fv(locV, 1, GL_FALSE, view);
             glUniformMatrix4fv(locP, 1, GL_FALSE, proj);
             glUniform1f(glGetUniformLocation(prog, "uUseTexture"), 0.0f);
-            glUniform3f(glGetUniformLocation(prog, "uBaseColor"), 0.04f, 0.78f, 0.32f);
+            glUniform3f(glGetUniformLocation(prog, "uBaseColor"), 0.56f, 0.56f, 0.60f);
             scratch.clear();
-            addCuboid(scratch, 0, 0, 0, L * 0.99f, 0.22f, W * 0.98f, 0.04f, 0.78f, 0.32f);
+            addCuboid(scratch, 0, 0, 0, L * 0.99f, 0.22f, W * 0.98f, 0.56f, 0.56f, 0.60f);
             static GLuint gVao = 0, gVbo = 0;
             if (gVao == 0) {
                 glGenVertexArrays(1, &gVao);
@@ -1429,10 +1456,17 @@ void Renderer::drawBuses(const Scene& scene, const float* view, const float* pro
         glUniform1f(glGetUniformLocation(prog, "uShininess"), 8.0f);
         glUniform1f(glGetUniformLocation(prog, "uSpecularStrength"), 0.08f);
         scratch.clear();
-        addCuboid(scratch, -L * 0.26f, -hy - 0.62f, hz * 0.86f, L * 0.15f, 0.75f, W * 0.23f, 0.02f, 0.02f, 0.02f);
-        addCuboid(scratch, -L * 0.26f, -hy - 0.62f, -hz * 0.86f, L * 0.15f, 0.75f, W * 0.23f, 0.02f, 0.02f, 0.02f);
-        addCuboid(scratch, L * 0.26f, -hy - 0.62f, hz * 0.86f, L * 0.15f, 0.75f, W * 0.23f, 0.02f, 0.02f, 0.02f);
-        addCuboid(scratch, L * 0.26f, -hy - 0.62f, -hz * 0.86f, L * 0.15f, 0.75f, W * 0.23f, 0.02f, 0.02f, 0.02f);
+        const float wy = -hy + 0.05f;
+        const float wr = W * 0.20f;
+        const float wl = L * 0.11f;
+        addCylinderX(scratch, -L * 0.28f - wl * 0.5f, wy, hz * 0.88f, wr, wl, 18, 0.02f, 0.02f, 0.02f);
+        addCylinderX(scratch, -L * 0.28f - wl * 0.5f, wy, -hz * 0.88f, wr, wl, 18, 0.02f, 0.02f, 0.02f);
+        addCylinderX(scratch, L * 0.28f - wl * 0.5f, wy, hz * 0.88f, wr, wl, 18, 0.02f, 0.02f, 0.02f);
+        addCylinderX(scratch, L * 0.28f - wl * 0.5f, wy, -hz * 0.88f, wr, wl, 18, 0.02f, 0.02f, 0.02f);
+        addSphere(scratch, -L * 0.28f, wy, hz * 0.88f, wr * 0.38f, 10, 8, 0.48f, 0.48f, 0.48f);
+        addSphere(scratch, -L * 0.28f, wy, -hz * 0.88f, wr * 0.38f, 10, 8, 0.48f, 0.48f, 0.48f);
+        addSphere(scratch, L * 0.28f, wy, hz * 0.88f, wr * 0.38f, 10, 8, 0.48f, 0.48f, 0.48f);
+        addSphere(scratch, L * 0.28f, wy, -hz * 0.88f, wr * 0.38f, 10, 8, 0.48f, 0.48f, 0.48f);
         static GLuint wVao = 0, wVbo = 0;
         if (wVao == 0) {
             glGenVertexArrays(1, &wVao);
@@ -1502,11 +1536,17 @@ void Renderer::drawInteriorScene(float timeSec, const float* view, const float* 
 
     float T[16];
     float M[16];
-    mat4Translate(0.0f, 0.0f, -4.65f, T);
+    mat4Translate(0.0f, 0.0f, -4.25f, T);
     mat4Mul(T, model, M);
-    float vv[12] = {-5.8f, 0.6f, 0.0f, 5.8f, 0.6f, 0.0f, 5.8f, 3.5f, 0.0f, -5.8f, 3.5f, 0.0f};
+    float vv[12] = {-6.4f, 0.4f, 0.0f, 6.4f, 0.4f, 0.0f, 6.4f, 3.8f, 0.0f, -6.4f, 3.8f, 0.0f};
     glDisable(GL_DEPTH_TEST);
     drawTexturedQuad(prog, view, proj, M, 0, 0, 1, vv, 0.0f, 0.0f, 1.0f, 1.0f,
+        m_hasTicketCounterTex ? m_ticketCounterTex : m_whiteTex, 1.0f, 1.0f, 1.0f, scratch);
+    // Second panel helps visibility with camera angle differences.
+    mat4Translate(-6.95f, 0.0f, 0.0f, T);
+    mat4Mul(T, model, M);
+    float vv2[12] = {0.0f, 0.6f, -4.8f, 0.0f, 0.6f, 4.8f, 0.0f, 3.6f, 4.8f, 0.0f, 3.6f, -4.8f};
+    drawTexturedQuad(prog, view, proj, M, 1, 0, 0, vv2, 0.0f, 0.0f, 1.0f, 1.0f,
         m_hasTicketCounterTex ? m_ticketCounterTex : m_whiteTex, 1.0f, 1.0f, 1.0f, scratch);
     glEnable(GL_DEPTH_TEST);
 
@@ -1755,11 +1795,11 @@ void Renderer::drawOutdoor(const Scene& scene, const CameraController& camera, c
         bindPhongFogSpots(prog, camPos, ga, sun, activePts, pts, nSpot, spots, settings);
         std::vector<float> scratch;
         scratch.reserve(256);
-        const unsigned int texRight = Bus::windowTextureId() != 0 ? Bus::windowTextureId() : Bus::bodyTextureId();
+        const unsigned int texRight = Bus::bodyTextureId();
         const unsigned int texLeft = texRight;
         const unsigned int texFront = Bus::frontTextureId() != 0 ? Bus::frontTextureId() : Bus::bodyTextureId();
         const unsigned int texRear = Bus::backTextureId() != 0 ? Bus::backTextureId() : Bus::bodyTextureId();
-        const unsigned int texTop = m_hasRoofTex ? m_roofTex : Bus::bodyTextureId();
+        const unsigned int texTop = 0;
         const unsigned int texBottom = Bus::bodyTextureId();
         auto drawGarageBus = [&](float bx, float bz, float headingDeg) {
             const float L = 5.2f;
@@ -1774,12 +1814,12 @@ void Renderer::drawOutdoor(const Scene& scene, const CameraController& camera, c
             mat4Mul(T, R, M);
             float v[12];
             auto face = [&](unsigned int tex, float nx, float ny, float nz, float u0, float tv0, float u1, float tv1) {
-                drawTexturedQuad(prog, view, proj, M, nx, ny, nz, v, u0, tv0, u1, tv1, tex, 0.14f, 0.14f, 0.16f, scratch);
+                drawTexturedQuad(prog, view, proj, M, nx, ny, nz, v, u0, tv0, u1, tv1, tex, 1.35f, 1.35f, 1.35f, scratch);
             };
             v[0] = -hx; v[1] = -hy; v[2] = hz; v[3] = hx; v[4] = -hy; v[5] = hz; v[6] = hx; v[7] = hy; v[8] = hz; v[9] = -hx; v[10] = hy; v[11] = hz;
-            face(texRight, 0, 0, 1, 0, 0, 12, 1);
+            face(texRight, 0, 0, 1, 0, 1, 4, 0);
             v[0] = -hx; v[1] = -hy; v[2] = -hz; v[3] = hx; v[4] = -hy; v[5] = -hz; v[6] = hx; v[7] = hy; v[8] = -hz; v[9] = -hx; v[10] = hy; v[11] = -hz;
-            face(texLeft, 0, 0, -1, 12, 0, 0, 1);
+            face(texLeft, 0, 0, -1, 0, 1, 4, 0);
             v[0] = hx; v[1] = -hy; v[2] = -hz; v[3] = hx; v[4] = -hy; v[5] = hz; v[6] = hx; v[7] = hy; v[8] = hz; v[9] = hx; v[10] = hy; v[11] = -hz;
             face(texFront, 1, 0, 0, 1, 1, 0, 0);
             v[0] = -hx; v[1] = -hy; v[2] = hz; v[3] = -hx; v[4] = -hy; v[5] = -hz; v[6] = -hx; v[7] = hy; v[8] = -hz; v[9] = -hx; v[10] = hy; v[11] = hz;
@@ -1792,7 +1832,8 @@ void Renderer::drawOutdoor(const Scene& scene, const CameraController& camera, c
         for (int i = 0; i < 7; ++i) {
             const float bx = -90.0f + static_cast<float>(i % 5) * 9.2f;
             const float bz = 78.0f + static_cast<float>(i / 5) * 8.0f;
-            drawGarageBus(bx, bz, 90.0f);
+            // drawGarageBus(bx, bz, 90.0f);
+            drawBuses(scene, view, proj, camPos, settings);
         }
     }
 
@@ -1808,8 +1849,9 @@ void Renderer::drawOutdoor(const Scene& scene, const CameraController& camera, c
             const float px = -120.0f + std::fmod(static_cast<float>(i) * 41.0f + timeSec * 3.2f, 240.0f);
             const float pz = -90.0f + std::fmod(static_cast<float>(i) * 29.0f + timeSec * 1.8f, 180.0f);
             const float py = 54.0f - phase * 2.3f;
-            addSphere(chute, px, py, pz, 1.35f, 10, 7, 0.95f, 0.30f + 0.08f * (i % 4), 0.26f);
-            addConeY(chute, px, py - 3.1f, pz, 2.35f, 3.0f, 12, 0.93f, 0.93f, 0.97f);
+            const float tint = static_cast<float>(i % 4) * 0.24f;
+            addSphere(chute, px, py, pz, 1.35f, 10, 7, 0.95f - tint * 0.35f, 0.22f + tint, 0.18f + tint * 0.55f);
+            addConeY(chute, px, py - 3.1f, pz, 2.35f, 3.0f, 12, 0.30f + tint * 0.2f, 0.58f + tint * 0.1f, 0.95f);
         }
         static GLuint cVao = 0, cVbo = 0;
         if (cVao == 0) {
@@ -1829,6 +1871,9 @@ void Renderer::drawOutdoor(const Scene& scene, const CameraController& camera, c
         glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, cStride, reinterpret_cast<void*>(6 * sizeof(float)));
         glUseProgram(stdP);
         glUniform1f(glGetUniformLocation(stdP, "uUseTexture"), 0.0f);
+        glUniform3f(glGetUniformLocation(stdP, "uBaseColor"), 0.98f, 0.26f, 0.52f);
+        glUniform1f(glGetUniformLocation(stdP, "uShininess"), 18.0f);
+        glUniform1f(glGetUniformLocation(stdP, "uSpecularStrength"), 0.12f);
         glUniformMatrix4fv(glGetUniformLocation(stdP, "uModel"), 1, GL_FALSE, model);
         glUniformMatrix4fv(glGetUniformLocation(stdP, "uView"), 1, GL_FALSE, view);
         glUniformMatrix4fv(glGetUniformLocation(stdP, "uProjection"), 1, GL_FALSE, proj);

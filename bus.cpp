@@ -74,19 +74,17 @@ void Bus::initGraphics() {
     s_graphicsInitialized = true;
 
     const char* bodyOnlyPaths[] = {
-        "textures/bus_body.png",
+        "textures/bus_bodyy.jpg",
+        "textures/bus_bodyy.png",
+        "textures/12.jpg",
         "textures/bus_body.jpg",
+        "textures/bus_body.png",
         "textures/bus_body1.png",
-        "textures/bus_body1.jpg",
-        "textures/bus_back.jpg",
-        "textures/bus_front.jpg",
-        "textures/bus_window.webp",
-        "../textures/bus_body.png",
+        "textures/bus_window.png",
+        "../textures/bus_bodyy.jpg",
         "../textures/bus_body.jpg",
-        "../textures/bus_body1.png",
-        "../../BusStandSimulator/textures/bus_body.png",
+        "../../BusStandSimulator/textures/bus_bodyy.jpg",
         "../../BusStandSimulator/textures/bus_body.jpg",
-        "../../BusStandSimulator/textures/bus_body1.png",
     };
     s_bodyTexture =
         loadTextureFromSearchPaths(bodyOnlyPaths, static_cast<int>(sizeof(bodyOnlyPaths) / sizeof(bodyOnlyPaths[0])));
@@ -98,9 +96,9 @@ void Bus::initGraphics() {
     s_backTexture = loadNamedTexture("bus_back");
     s_backTextureOk = (s_backTexture != 0);
 
-    s_windowTexture = loadNamedTexture("bus-window");
+    s_windowTexture = loadNamedTexture("bus_bodyy");
     if (s_windowTexture == 0) {
-        s_windowTexture = loadNamedTexture("bus_window");
+        s_windowTexture = loadNamedTexture("12");
     }
     s_windowTextureOk = (s_windowTexture != 0);
 }
@@ -112,7 +110,7 @@ Bus::Bus(float speedUnitsPerSec, float initialDistance, float busLength, float b
       m_width(busWidth),
       m_height(busHeight),
       m_autopilot(true),
-      m_manualPos{-34.0f, 0.0f, -20.0f},
+      m_manualPos{-72.0f, 0.0f, -62.0f},
       m_manualHeadingDeg(0.0f),
       m_manualSpeed(0.0f),
       m_steerAngleDeg(0.0f),

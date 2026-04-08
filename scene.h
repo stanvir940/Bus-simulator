@@ -12,6 +12,8 @@ public:
     void update(float dt);
     void onKeyState(int key, bool isPressed);
     void onSpecialState(int key, bool isPressed);
+    void toggleAutoBus1();
+    void toggleAutoBus2();
 
     const Bus& getDriverBus() const;
     const std::vector<Bus>& getBuses() const { return m_buses; }
@@ -32,4 +34,6 @@ private:
     bool m_keyD;
     bool m_specialLeft;
     bool m_specialRight;
+    bool m_autoBus1Enabled;
+    bool m_autoBus2Enabled;
 };
